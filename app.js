@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addVectorBtn = document.getElementById('add-vector');
     const fetchDataBtn = document.getElementById('fetch-data');
     const vectorInputsContainer = document.getElementById('vector-inputs');
-    const visualizationContainer = document.getElementById('visualization');
+    const visualizationContainer = document.getElementById('visualization-container');
     const tableContainer = document.getElementById('table-container');
     const loadingIndicator = document.getElementById('loading');
     
@@ -338,12 +338,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 x: {
                     field: 'refPer',
                     type: 'temporal',
-                    title: 'Reference Period'
+                    title: 'Reference Period',
+                    scale: { domain: { selection: 'zoom' } }
                 },
                 y: {
                     field: 'value',
                     type: 'quantitative',
-                    title: 'Value'
+                    title: 'Value',
+                    scale: { domain: { selection: 'zoom' } }
                 },
                 color: {
                     field: 'vectorId',
@@ -356,7 +358,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     { field: 'value', type: 'quantitative', title: 'Value' }
                 ]
             },
-            title: 'Statistics Canada Data - Line Chart'
+            selection: {
+                zoom: {
+                    type: 'interval',
+                    bind: 'scales',
+                    encodings: ['x', 'y']
+                }
+            },
+            title: 'Statistics Canada Data - Line Chart (Zoom: Click and drag, scroll wheel, or double-click to reset)'
         };
     }
     
@@ -372,12 +381,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 x: {
                     field: 'refPer',
                     type: 'temporal',
-                    title: 'Reference Period'
+                    title: 'Reference Period',
+                    scale: { domain: { selection: 'zoom' } }
                 },
                 y: {
                     field: 'value',
                     type: 'quantitative',
-                    title: 'Value'
+                    title: 'Value',
+                    scale: { domain: { selection: 'zoom' } }
                 },
                 color: {
                     field: 'vectorId',
@@ -391,7 +402,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     { field: 'value', type: 'quantitative', title: 'Value' }
                 ]
             },
-            title: 'Statistics Canada Data - Scatter Chart'
+            selection: {
+                zoom: {
+                    type: 'interval',
+                    bind: 'scales',
+                    encodings: ['x', 'y']
+                }
+            },
+            title: 'Statistics Canada Data - Scatter Chart (Zoom: Click and drag, scroll wheel, or double-click to reset)'
         };
     }
     
@@ -407,13 +425,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 x: {
                     field: 'refPer',
                     type: 'temporal',
-                    title: 'Reference Period'
+                    title: 'Reference Period',
+                    scale: { domain: { selection: 'zoom' } }
                 },
                 y: {
                     field: 'value',
                     type: 'quantitative',
                     title: 'Value',
-                    stack: 'zero'
+                    stack: 'zero',
+                    scale: { domain: { selection: 'zoom' } }
                 },
                 color: {
                     field: 'vectorId',
@@ -426,7 +446,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     { field: 'value', type: 'quantitative', title: 'Value' }
                 ]
             },
-            title: 'Statistics Canada Data - Bar Chart'
+            selection: {
+                zoom: {
+                    type: 'interval',
+                    bind: 'scales',
+                    encodings: ['x', 'y']
+                }
+            },
+            title: 'Statistics Canada Data - Bar Chart (Zoom: Click and drag, scroll wheel, or double-click to reset)'
         };
     }
 });

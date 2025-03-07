@@ -128,14 +128,32 @@ input {
     border-color: var(--primary-color);
 }
 
-#visualization {
+#visualization-container {
     width: 100%;
-    height: 500px;
     background-color: white;
     border: 1px solid var(--border-color);
     border-radius: 5px;
     padding: 20px;
     margin-top: 20px;
+}
+
+#visualization {
+    width: 100%;
+    height: 500px;
+}
+
+.zoom-instructions {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid var(--primary-color);
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+.zoom-instructions p {
+    margin: 0;
 }
 
 #table-container {
