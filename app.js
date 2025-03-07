@@ -108,10 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Ensure fetchedData is an array
             if (Array.isArray(data)) {
                 fetchedData = data;
-            } else {
-                // If it's not an array, wrap it in an array
+            } else if (data && typeof data === 'object') {
+                // If it's a single object, wrap it in an array
                 fetchedData = [data];
                 console.log('Data was not an array, converted to:', fetchedData);
+            } else {
+                // If it's something else entirely, show an error
+                throw new Error('Unexpected data format received from API');
             }
             
             // Update visualization based on current type
