@@ -1,0 +1,15 @@
+{
+  "name": "statistics-canada-data-visualizer",
+  "version": "1.0.0",
+  "description": "A web application for visualizing Statistics Canada data using Vega",
+  "main": "index.html",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "netlify-cli": "^12.0.0"
+  }
+}

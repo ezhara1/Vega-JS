@@ -87,11 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            // Use a different CORS proxy service
-            const corsProxyUrl = 'https://thingproxy.freeboard.io/fetch/';
-            const targetUrl = 'https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorsAndLatestNPeriods';
-            
-            const response = await fetch(corsProxyUrl + targetUrl, {
+            // Use Netlify Function as a proxy to the Statistics Canada API
+            const response = await fetch('/api/statcan-proxy', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
