@@ -298,12 +298,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.object.vectorDataPoint.forEach(dataPoint => {
                     transformedData.push({
                         vectorId: vectorId.toString(),
-                        refPer: dataPoint.refPer,
-                        value: parseFloat(dataPoint.value)
+                        refPer: new Date(dataPoint.refPer), // Ensure proper date parsing
+                        value: parseFloat(dataPoint.value) || 0 // Handle potential NaN values
                     });
                 });
             }
         });
+        
+        // Sort data by date for proper line connections
+        transformedData.sort((a, b) => a.refPer - b.refPer);
         
         // Create Vega spec based on visualization type
         let vegaSpec;
@@ -333,7 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
             data: { values: data },
             width: 'container',
             height: 400,
-            mark: 'line',
+            mark: {
+                type: 'line',
+                point: true,  // Add points at each data point
+                interpolate: 'linear', // Use linear interpolation
+                strokeWidth: 2,        // Make lines more visible
+                tension: 0             // No curve tension
+            },
             encoding: {
                 x: {
                     field: 'refPer',
@@ -350,11 +359,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 color: {
                     field: 'vectorId',
                     type: 'nominal',
-                    title: 'Vector ID'
+                    title: 'Vector ID',
+                    scale: {
+                        scheme: 'category10' // Use a color scheme with better contrast
+                    }
                 },
                 tooltip: [
                     { field: 'vectorId', type: 'nominal', title: 'Vector ID' },
-                    { field: 'refPer', type: 'temporal', title: 'Reference Period' },
+                    { field: 'refPer', type: 'temporal', title: 'Reference Period', format: '%b %d, %Y' },
                     { field: 'value', type: 'quantitative', title: 'Value' }
                 ]
             },
