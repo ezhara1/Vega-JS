@@ -39,6 +39,24 @@ This application uses the Statistics Canada Web Data Service (WDS) API:
 
 Simply open the `index.html` file in a web browser to use the application. No server setup or installation is required.
 
+## CORS Issues and Solutions
+
+When running this application locally, you might encounter CORS (Cross-Origin Resource Sharing) policy errors. This happens because browsers prevent web pages from making requests to a different domain than the one that served the web page, as a security measure.
+
+The application uses a CORS proxy to work around this issue. If you encounter CORS errors, here are some solutions:
+
+1. **Use a CORS Proxy** (Already implemented in the code)
+   - The application uses corsproxy.io and has a fallback to cors-anywhere.herokuapp.com
+   - These services forward your request to the Statistics Canada API with proper CORS headers
+
+2. **Use a Local Development Server**
+   - Instead of opening the HTML file directly, serve it through a local server
+   - Install a simple HTTP server like "Live Server" extension in VS Code
+   - Or use Python's built-in HTTP server: `python -m http.server`
+
+3. **Use a Browser Extension**
+   - Install a CORS-bypassing browser extension like "CORS Unblock" or "Allow CORS: Access-Control-Allow-Origin"
+
 ## Browser Compatibility
 
 This application is compatible with modern web browsers including:

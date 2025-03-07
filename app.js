@@ -87,7 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            const response = await fetch('https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorsAndLatestNPeriods', {
+            // Use a different CORS proxy service
+            const corsProxyUrl = 'https://thingproxy.freeboard.io/fetch/';
+            const targetUrl = 'https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorsAndLatestNPeriods';
+            
+            const response = await fetch(corsProxyUrl + targetUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
