@@ -1,5 +1,5 @@
 // For Netlify Functions
-const fetch = require('node-fetch');
+// No need to require node-fetch as modern Node.js versions have fetch built-in
 
 exports.handler = async function(event, context) {
   // Only allow POST requests
