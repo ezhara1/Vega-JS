@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics Canada Data Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Vega and Vega-Lite libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Data Controls</h2>
+            <div class="control-panel">
+                <div id="vector-inputs">
+                    <div class="vector-input">
+                        <label for="vector-id-1">Vector ID:</label>
+                        <input type="text" id="vector-id-1" class="vector-id" placeholder="e.g. 32164132" value="32164132">
+                        
+                        <label for="periods-1">N Periods:</label>
+                        <input type="number" id="periods-1" class="periods" min="1" max="100" value="3">
+                    </div>
+                </div>
+                
+                <button id="add-vector" class="btn">Add Vector</button>
+                <button id="fetch-data" class="btn primary">Fetch Data</button>
+                
+                <div class="visualization-controls">
+                    <h3>Visualization Type</h3>
+                    <div class="viz-buttons">
+                        <button id="line-chart" class="viz-btn active">Line</button>
+                        <button id="scatter-chart" class="viz-btn">Scatter</button>
+                        <button id="bar-chart" class="viz-btn">Bar</button>
+                        <button id="table-view" class="viz-btn">Table</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <h1>Statistics Canada Data Visualizer</h1>
+            <div id="loading" class="hidden">Loading data...</div>
+            <div id="visualization"></div>
+            <div id="table-container" class="hidden"></div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
