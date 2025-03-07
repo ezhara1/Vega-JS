@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             // Use Netlify Function as a proxy to the Statistics Canada API
+            console.log('Sending request to Netlify function with data:', requestData);
+            
             const response = await fetch('/api/statcan-proxy', {
                 method: 'POST',
                 headers: {
@@ -101,14 +103,62 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const data = await response.json();
-            fetchedData = data;
+            console.log('Received data from Netlify function:', data);
+            
+            // Ensure fetchedData is an array
+            if (Array.isArray(data)) {
+                fetchedData = data;
+            } else {
+                // If it's not an array, wrap it in an array
+                fetchedData = [data];
+                console.log('Data was not an array, converted to:', fetchedData);
+            }
             
             // Update visualization based on current type
             updateVisualization();
             
         } catch (error) {
             console.error('Error fetching data:', error);
-            alert('Error fetching data. Please check the console for details.');
+            alert('Error fetching data. Falling back to sample data for demonstration.');
+            
+            // Use sample data as a fallback
+            fetchedData = [
+                {
+                    "status": "SUCCESS",
+                    "object": {
+                        "responseStatusCode": 0,
+                        "productId": 34100006,
+                        "coordinate": "1.2.7.0.0.0.0.0.0",
+                        "vectorId": 32164132,
+                        "vectorDataPoint": [
+                            {
+                                "refPer": "2023-01-01",
+                                "refPer2": "",
+                                "refPerRaw": "2023-01-01",
+                                "refPerRaw2": "",
+                                "value": "18381"
+                            },
+                            {
+                                "refPer": "2023-02-01",
+                                "refPer2": "",
+                                "refPerRaw": "2023-02-01",
+                                "refPerRaw2": "",
+                                "value": "18450"
+                            },
+                            {
+                                "refPer": "2023-03-01",
+                                "refPer2": "",
+                                "refPerRaw": "2023-03-01",
+                                "refPerRaw2": "",
+                                "value": "18517"
+                            }
+                        ]
+                    }
+                }
+            ];
+            
+            // Update visualization with sample data
+            updateVisualization();
         } finally {
             // Hide loading indicator
             loadingIndicator.classList.add('hidden');

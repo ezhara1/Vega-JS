@@ -13,8 +13,10 @@ exports.handler = async function(event, context) {
   try {
     // Get the request body
     const requestBody = JSON.parse(event.body);
+    console.log('Received request body:', requestBody);
     
     // Make the request to Statistics Canada API
+    console.log('Making request to Statistics Canada API');
     const response = await fetch(
       'https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorsAndLatestNPeriods',
       {
@@ -26,8 +28,14 @@ exports.handler = async function(event, context) {
       }
     );
     
+    if (!response.ok) {
+      console.error('Error response from Statistics Canada API:', response.status, response.statusText);
+      throw new Error(`Statistics Canada API responded with status: ${response.status}`);
+    }
+    
     // Get the response data
     const data = await response.json();
+    console.log('Received data from Statistics Canada API:', JSON.stringify(data).substring(0, 200) + '...');
     
     // Return the response
     return {
@@ -36,7 +44,7 @@ exports.handler = async function(event, context) {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*' // Allow requests from any origin
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify([data]) // Ensure the response is an array
     };
   } catch (error) {
     console.error('Error in Netlify Function:', error);
