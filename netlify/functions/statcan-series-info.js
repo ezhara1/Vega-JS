@@ -15,6 +15,8 @@ exports.handler = async function(event, context) {
       // Get the request body
       const requestBody = JSON.parse(event.body);
       
+      console.log('Request body for series info:', JSON.stringify(requestBody));
+      
       // Prepare the request options
       const options = {
         hostname: 'www150.statcan.gc.ca',
@@ -26,6 +28,8 @@ exports.handler = async function(event, context) {
           'Content-Length': Buffer.byteLength(JSON.stringify(requestBody))
         }
       };
+      
+      console.log('Making request to Statistics Canada API with options:', JSON.stringify(options));
       
       // Make the request to Statistics Canada API
       const req = https.request(options, (res) => {
@@ -39,7 +43,9 @@ exports.handler = async function(event, context) {
         // The whole response has been received
         res.on('end', () => {
           try {
+            console.log('Raw response from Statistics Canada API:', data);
             const parsedData = JSON.parse(data);
+            console.log('Parsed response from Statistics Canada API:', JSON.stringify(parsedData));
             
             resolve({
               statusCode: 200,
@@ -50,6 +56,7 @@ exports.handler = async function(event, context) {
               body: JSON.stringify(parsedData)
             });
           } catch (e) {
+            console.error('Error parsing response:', e.message);
             resolve({
               statusCode: 500,
               headers: {
@@ -66,6 +73,7 @@ exports.handler = async function(event, context) {
       
       // Handle request errors
       req.on('error', (error) => {
+        console.error('Request error:', error.message);
         resolve({
           statusCode: 500,
           headers: {
@@ -83,6 +91,7 @@ exports.handler = async function(event, context) {
       req.end();
       
     } catch (error) {
+      console.error('Function error:', error.message);
       resolve({
         statusCode: 500,
         headers: {

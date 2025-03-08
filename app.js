@@ -221,17 +221,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const data = await response.json();
-            console.log('Received series info:', data);
+            console.log('Received series info (raw):', JSON.stringify(data));
             
             // Process series info
             if (Array.isArray(data)) {
                 data.forEach(item => {
                     if (item.status === "SUCCESS" && item.object) {
                         const vectorId = item.object.vectorId.toString();
+                        // Log each item to see what fields are available
+                        console.log(`Series info for vector ${vectorId}:`, JSON.stringify(item.object));
+                        
+                        // Check if SeriesTitleEn exists and has a value (note the capital S and T)
+                        if (item.object.SeriesTitleEn) {
+                            console.log(`SeriesTitleEn for vector ${vectorId}:`, item.object.SeriesTitleEn);
+                        } else {
+                            console.log(`SeriesTitleEn for vector ${vectorId} is missing or empty`);
+                        }
+                        
                         seriesInfo[vectorId] = {
                             productId: item.object.productId,
-                            seriesTitleEn: item.object.seriesTitleEn || `Vector ${vectorId}`,
-                            seriesTitleFr: item.object.seriesTitleFr || `Vecteur ${vectorId}`
+                            seriesTitleEn: item.object.SeriesTitleEn || `Vector ${vectorId}`, // Use SeriesTitleEn with capital S and T
+                            seriesTitleFr: item.object.SeriesTitleFr || `Vecteur ${vectorId}`  // Use SeriesTitleFr with capital S and T
                         };
                     }
                 });
@@ -376,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.status === "SUCCESS" && item.object && item.object.vectorDataPoint) {
                 const vectorId = item.object.vectorId.toString();
                 const productId = item.object.productId;
-                const seriesTitle = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : `Vector ${vectorId} - ${seriesTitle}`;
+                const seriesTitle = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : `Vector ${vectorId}`;
                 
                 item.object.vectorDataPoint.forEach(dataPoint => {
                     transformedData.push({
