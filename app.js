@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store fetched data
     let fetchedData = [];
     
+    // Store series information
+    let seriesInfo = {};
+    
     // Add event listeners
     addVectorBtn.addEventListener('click', addVectorInput);
     fetchDataBtn.addEventListener('click', fetchData);
@@ -54,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const removeBtn = vectorInputDiv.querySelector('.remove-vector');
         removeBtn.addEventListener('click', () => {
             vectorInputsContainer.removeChild(vectorInputDiv);
-        });
+        }); 
     }
     
     // Function to fetch data from the API
@@ -117,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Unexpected data format received from API');
             }
             
+            // Fetch series information for each vector
+            await fetchSeriesInfo();
+            
             // Update visualization based on current type
             updateVisualization();
             
@@ -160,11 +166,91 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             ];
             
+            // Add sample series info
+            seriesInfo = {
+                "32164132": {
+                    "productId": 35100003,
+                    "seriesTitleEn": "Newfoundland and Labrador;Probation rate per 10,000 young persons"
+                }
+            };
+            
             // Update visualization with sample data
             updateVisualization();
         } finally {
             // Hide loading indicator
             loadingIndicator.classList.add('hidden');
+        }
+    }
+    
+    // Function to fetch series information for each vector
+    async function fetchSeriesInfo() {
+        // Create an object to store series info
+        seriesInfo = {};
+        
+        // Get unique vector IDs from fetched data
+        const vectorIds = fetchedData.map(item => {
+            if (item.status === "SUCCESS" && item.object && item.object.vectorId) {
+                return item.object.vectorId.toString();
+            }
+            return null;
+        }).filter(id => id !== null);
+        
+        // If no valid vector IDs, return
+        if (vectorIds.length === 0) {
+            console.log('No valid vector IDs found to fetch series info');
+            return;
+        }
+        
+        try {
+            // Prepare request for series info
+            const requestBody = vectorIds.map(id => ({ "vectorId": id }));
+            
+            // Use Netlify Function as a proxy to the Statistics Canada API
+            console.log('Sending request to get series info with data:', requestBody);
+            
+            const response = await fetch('/api/statcan-series-info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Received series info:', data);
+            
+            // Process series info
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    if (item.status === "SUCCESS" && item.object) {
+                        const vectorId = item.object.vectorId.toString();
+                        seriesInfo[vectorId] = {
+                            productId: item.object.productId,
+                            seriesTitleEn: item.object.seriesTitleEn,
+                            seriesTitleFr: item.object.seriesTitleFr
+                        };
+                    }
+                });
+            }
+            
+            console.log('Processed series info:', seriesInfo);
+        } catch (error) {
+            console.error('Error fetching series info:', error);
+            // Create basic series info from the data we already have
+            fetchedData.forEach(item => {
+                if (item.status === "SUCCESS" && item.object) {
+                    const vectorId = item.object.vectorId.toString();
+                    seriesInfo[vectorId] = {
+                        productId: item.object.productId,
+                        seriesTitleEn: `Vector ${vectorId}`,
+                        seriesTitleFr: `Vecteur ${vectorId}`
+                    };
+                }
+            });
         }
     }
     
@@ -204,52 +290,42 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to generate table from data
     function generateTable() {
-        // Clear previous table
         tableContainer.innerHTML = '';
         
-        if (!fetchedData || fetchedData.length === 0) {
+        if (fetchedData.length === 0) {
             tableContainer.innerHTML = '<p>No data available</p>';
             return;
         }
         
         // Create table element
         const table = document.createElement('table');
-        const thead = document.createElement('thead');
-        const tbody = document.createElement('tbody');
         
-        // Create header row
+        // Create table header
+        const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
         
-        // Add Vector ID column
-        const vectorIdHeader = document.createElement('th');
-        vectorIdHeader.textContent = 'Vector ID';
-        headerRow.appendChild(vectorIdHeader);
-        
-        // Add Reference Period column
-        const refPerHeader = document.createElement('th');
-        refPerHeader.textContent = 'Reference Period';
-        headerRow.appendChild(refPerHeader);
-        
-        // Add Value column
-        const valueHeader = document.createElement('th');
-        valueHeader.textContent = 'Value';
-        headerRow.appendChild(valueHeader);
-        
-        // Add Product ID column
-        const productIdHeader = document.createElement('th');
-        productIdHeader.textContent = 'Product ID';
-        headerRow.appendChild(productIdHeader);
+        // Add headers
+        const headers = ['Vector ID', 'Product ID', 'Series Title', 'Date', 'Value'];
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
         
         thead.appendChild(headerRow);
         table.appendChild(thead);
         
-        // Create data rows
+        // Create table body
+        const tbody = document.createElement('tbody');
+        
+        // Add data rows
         fetchedData.forEach(item => {
-            if (item.status === 'SUCCESS' && item.object && item.object.vectorDataPoint) {
-                const vectorId = item.object.vectorId;
+            if (item.status === "SUCCESS" && item.object && item.object.vectorDataPoint) {
+                const vectorId = item.object.vectorId.toString();
                 const productId = item.object.productId;
+                const seriesTitle = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : `Vector ${vectorId}`;
                 
-                item.object.vectorDataPoint.forEach(dataPoint => {
+                item.object.vectorDataPoint.forEach(point => {
                     const row = document.createElement('tr');
                     
                     // Vector ID cell
@@ -257,20 +333,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     vectorIdCell.textContent = vectorId;
                     row.appendChild(vectorIdCell);
                     
-                    // Reference Period cell
-                    const refPerCell = document.createElement('td');
-                    refPerCell.textContent = dataPoint.refPer;
-                    row.appendChild(refPerCell);
-                    
-                    // Value cell
-                    const valueCell = document.createElement('td');
-                    valueCell.textContent = dataPoint.value;
-                    row.appendChild(valueCell);
-                    
                     // Product ID cell
                     const productIdCell = document.createElement('td');
                     productIdCell.textContent = productId;
                     row.appendChild(productIdCell);
+                    
+                    // Series Title cell
+                    const seriesTitleCell = document.createElement('td');
+                    seriesTitleCell.textContent = seriesTitle;
+                    row.appendChild(seriesTitleCell);
+                    
+                    // Date cell
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = point.refPer;
+                    row.appendChild(dateCell);
+                    
+                    // Value cell
+                    const valueCell = document.createElement('td');
+                    valueCell.textContent = point.value;
+                    row.appendChild(valueCell);
                     
                     tbody.appendChild(row);
                 });
@@ -292,21 +373,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const transformedData = [];
         
         fetchedData.forEach(item => {
-            if (item.status === 'SUCCESS' && item.object && item.object.vectorDataPoint) {
-                const vectorId = item.object.vectorId;
+            if (item.status === "SUCCESS" && item.object && item.object.vectorDataPoint) {
+                const vectorId = item.object.vectorId.toString();
+                const productId = item.object.productId;
+                const seriesTitle = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : `Vector ${vectorId}`;
                 
                 item.object.vectorDataPoint.forEach(dataPoint => {
                     transformedData.push({
-                        vectorId: vectorId.toString(),
-                        refPer: new Date(dataPoint.refPer), // Ensure proper date parsing
-                        value: parseFloat(dataPoint.value) || 0 // Handle potential NaN values
+                        date: dataPoint.refPer,
+                        value: parseFloat(dataPoint.value),
+                        vectorId: vectorId,
+                        productId: productId,
+                        seriesTitle: seriesTitle
                     });
                 });
             }
         });
         
         // Sort data by date for proper line connections
-        transformedData.sort((a, b) => a.refPer - b.refPer);
+        transformedData.sort((a, b) => a.date - b.date);
         
         // Create Vega spec based on visualization type
         let vegaSpec;
@@ -332,140 +417,130 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to create Line Chart Vega spec
     function createLineChartSpec(data) {
         return {
-            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-            data: { values: data },
-            width: 'container',
-            height: 400,
-            mark: {
-                type: 'line',
-                point: true,  // Add points at each data point
-                interpolate: 'linear', // Use linear interpolation
-                strokeWidth: 2,        // Make lines more visible
-                tension: 0             // No curve tension
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "Statistics Canada Time Series Data",
+            "width": "container",
+            "height": 400,
+            "data": {
+                "values": data
             },
-            encoding: {
-                x: {
-                    field: 'refPer',
-                    type: 'temporal',
-                    title: 'Reference Period',
-                    scale: { domain: { selection: 'zoom' } }
+            "mark": {
+                "type": "line",
+                "point": true
+            },
+            "encoding": {
+                "x": {
+                    "field": "date",
+                    "type": "temporal",
+                    "title": "Date"
                 },
-                y: {
-                    field: 'value',
-                    type: 'quantitative',
-                    title: 'Value',
-                    scale: { domain: { selection: 'zoom' } }
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Value"
                 },
-                color: {
-                    field: 'vectorId',
-                    type: 'nominal',
-                    title: 'Vector ID',
-                    scale: {
-                        scheme: 'category10' // Use a color scheme with better contrast
-                    }
+                "color": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": "Series",
+                    "legend": {"orient": "bottom"}
                 },
-                tooltip: [
-                    { field: 'vectorId', type: 'nominal', title: 'Vector ID' },
-                    { field: 'refPer', type: 'temporal', title: 'Reference Period', format: '%b %d, %Y' },
-                    { field: 'value', type: 'quantitative', title: 'Value' }
+                "tooltip": [
+                    {"field": "date", "type": "temporal", "title": "Date"},
+                    {"field": "value", "type": "quantitative", "title": "Value"},
+                    {"field": "vectorId", "type": "nominal", "title": "Vector ID"},
+                    {"field": "productId", "type": "nominal", "title": "Product ID"},
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
                 ]
             },
-            selection: {
-                zoom: {
-                    type: 'interval',
-                    bind: 'scales',
-                    encodings: ['x', 'y']
+            "config": {
+                "point": {
+                    "filled": true,
+                    "size": 60
                 }
-            },
-            title: 'Statistics Canada Data - Line Chart (Zoom: Click and drag, scroll wheel, or double-click to reset)'
+            }
         };
     }
     
     // Function to create Scatter Chart Vega spec
     function createScatterChartSpec(data) {
         return {
-            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-            data: { values: data },
-            width: 'container',
-            height: 400,
-            mark: 'point',
-            encoding: {
-                x: {
-                    field: 'refPer',
-                    type: 'temporal',
-                    title: 'Reference Period',
-                    scale: { domain: { selection: 'zoom' } }
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "Statistics Canada Scatter Plot",
+            "width": "container",
+            "height": 400,
+            "data": {
+                "values": data
+            },
+            "mark": {
+                "type": "point",
+                "filled": true
+            },
+            "encoding": {
+                "x": {
+                    "field": "date",
+                    "type": "temporal",
+                    "title": "Date"
                 },
-                y: {
-                    field: 'value',
-                    type: 'quantitative',
-                    title: 'Value',
-                    scale: { domain: { selection: 'zoom' } }
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Value"
                 },
-                color: {
-                    field: 'vectorId',
-                    type: 'nominal',
-                    title: 'Vector ID'
+                "color": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": "Series",
+                    "legend": {"orient": "bottom"}
                 },
-                size: { value: 100 },
-                tooltip: [
-                    { field: 'vectorId', type: 'nominal', title: 'Vector ID' },
-                    { field: 'refPer', type: 'temporal', title: 'Reference Period' },
-                    { field: 'value', type: 'quantitative', title: 'Value' }
+                "size": {"value": 100},
+                "tooltip": [
+                    {"field": "date", "type": "temporal", "title": "Date"},
+                    {"field": "value", "type": "quantitative", "title": "Value"},
+                    {"field": "vectorId", "type": "nominal", "title": "Vector ID"},
+                    {"field": "productId", "type": "nominal", "title": "Product ID"},
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
                 ]
-            },
-            selection: {
-                zoom: {
-                    type: 'interval',
-                    bind: 'scales',
-                    encodings: ['x', 'y']
-                }
-            },
-            title: 'Statistics Canada Data - Scatter Chart (Zoom: Click and drag, scroll wheel, or double-click to reset)'
+            }
         };
     }
     
     // Function to create Bar Chart Vega spec
     function createBarChartSpec(data) {
         return {
-            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-            data: { values: data },
-            width: 'container',
-            height: 400,
-            mark: 'bar',
-            encoding: {
-                x: {
-                    field: 'refPer',
-                    type: 'temporal',
-                    title: 'Reference Period',
-                    scale: { domain: { selection: 'zoom' } }
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "Statistics Canada Bar Chart",
+            "width": "container",
+            "height": 400,
+            "data": {
+                "values": data
+            },
+            "mark": "bar",
+            "encoding": {
+                "x": {
+                    "field": "date",
+                    "type": "temporal",
+                    "title": "Date"
                 },
-                y: {
-                    field: 'value',
-                    type: 'quantitative',
-                    title: 'Value',
-                    stack: 'zero',
-                    scale: { domain: { selection: 'zoom' } }
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Value"
                 },
-                color: {
-                    field: 'vectorId',
-                    type: 'nominal',
-                    title: 'Vector ID'
+                "color": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": "Series",
+                    "legend": {"orient": "bottom"}
                 },
-                tooltip: [
-                    { field: 'vectorId', type: 'nominal', title: 'Vector ID' },
-                    { field: 'refPer', type: 'temporal', title: 'Reference Period' },
-                    { field: 'value', type: 'quantitative', title: 'Value' }
+                "tooltip": [
+                    {"field": "date", "type": "temporal", "title": "Date"},
+                    {"field": "value", "type": "quantitative", "title": "Value"},
+                    {"field": "vectorId", "type": "nominal", "title": "Vector ID"},
+                    {"field": "productId", "type": "nominal", "title": "Product ID"},
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
                 ]
-            },
-            selection: {
-                zoom: {
-                    type: 'interval',
-                    bind: 'scales',
-                    encodings: ['x', 'y']
-                }
-            },
-            title: 'Statistics Canada Data - Bar Chart (Zoom: Click and drag, scroll wheel, or double-click to reset)'
+            }
         };
     }
 });
