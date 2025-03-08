@@ -230,8 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const vectorId = item.object.vectorId.toString();
                         seriesInfo[vectorId] = {
                             productId: item.object.productId,
-                            seriesTitleEn: item.object.seriesTitleEn,
-                            seriesTitleFr: item.object.seriesTitleFr
+                            seriesTitleEn: item.object.seriesTitleEn || `Vector ${vectorId}`,
+                            seriesTitleFr: item.object.seriesTitleFr || `Vecteur ${vectorId}`
                         };
                     }
                 });
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.status === "SUCCESS" && item.object && item.object.vectorDataPoint) {
                 const vectorId = item.object.vectorId.toString();
                 const productId = item.object.productId;
-                const seriesTitle = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : `Vector ${vectorId}`;
+                const seriesTitle = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : `Vector ${vectorId} - ${seriesTitle}`;
                 
                 item.object.vectorDataPoint.forEach(dataPoint => {
                     transformedData.push({
@@ -391,27 +391,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // Sort data by date for proper line connections
-        transformedData.sort((a, b) => a.date - b.date);
+        transformedData.sort((a, b) => new Date(a.date) - new Date(b.date));
         
         // Create Vega spec based on visualization type
         let vegaSpec;
         
-        switch (currentVizType) {
-            case 'line':
-                vegaSpec = createLineChartSpec(transformedData);
-                break;
-            case 'scatter':
-                vegaSpec = createScatterChartSpec(transformedData);
-                break;
-            case 'bar':
-                vegaSpec = createBarChartSpec(transformedData);
-                break;
-            default:
-                vegaSpec = createLineChartSpec(transformedData);
+        if (currentVizType === 'line') {
+            vegaSpec = createLineChartSpec(transformedData);
+        } else if (currentVizType === 'scatter') {
+            vegaSpec = createScatterChartSpec(transformedData);
+        } else if (currentVizType === 'bar') {
+            vegaSpec = createBarChartSpec(transformedData);
         }
         
-        // Render Vega visualization
-        vegaEmbed('#visualization', vegaSpec, { actions: true });
+        // Render visualization
+        if (vegaSpec) {
+            vegaEmbed('#visualization', vegaSpec, { 
+                actions: true,
+                renderer: 'canvas'
+            }).catch(console.error);
+        }
     }
     
     // Function to create Line Chart Vega spec
@@ -432,12 +431,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "x": {
                     "field": "date",
                     "type": "temporal",
-                    "title": "Date"
+                    "title": "Date",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value"
+                    "title": "Value",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "color": {
                     "field": "seriesTitle",
@@ -452,6 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     {"field": "productId", "type": "nominal", "title": "Product ID"},
                     {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
                 ]
+            },
+            "selection": {
+                "zoom": {
+                    "type": "interval",
+                    "bind": "scales",
+                    "encodings": ["x", "y"]
+                }
             },
             "config": {
                 "point": {
@@ -480,12 +488,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "x": {
                     "field": "date",
                     "type": "temporal",
-                    "title": "Date"
+                    "title": "Date",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value"
+                    "title": "Value",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "color": {
                     "field": "seriesTitle",
@@ -501,6 +511,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     {"field": "productId", "type": "nominal", "title": "Product ID"},
                     {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
                 ]
+            },
+            "selection": {
+                "zoom": {
+                    "type": "interval",
+                    "bind": "scales",
+                    "encodings": ["x", "y"]
+                }
             }
         };
     }
@@ -520,12 +537,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "x": {
                     "field": "date",
                     "type": "temporal",
-                    "title": "Date"
+                    "title": "Date",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value"
+                    "title": "Value",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "color": {
                     "field": "seriesTitle",
@@ -540,6 +559,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     {"field": "productId", "type": "nominal", "title": "Product ID"},
                     {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
                 ]
+            },
+            "selection": {
+                "zoom": {
+                    "type": "interval",
+                    "bind": "scales",
+                    "encodings": ["x", "y"]
+                }
             }
         };
     }
