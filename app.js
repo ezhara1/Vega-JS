@@ -454,7 +454,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     "field": "seriesTitle",
                     "type": "nominal",
                     "title": "Series",
-                    "legend": {"orient": "bottom"}
+                    "legend": {
+                        "orient": "bottom",
+                        "labelLimit": 300,
+                        "columnPadding": 10,
+                        "labelOverlap": "parity"
+                    }
                 },
                 "tooltip": [
                     {"field": "date", "type": "temporal", "title": "Date"},
@@ -511,7 +516,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     "field": "seriesTitle",
                     "type": "nominal",
                     "title": "Series",
-                    "legend": {"orient": "bottom"}
+                    "legend": {
+                        "orient": "bottom",
+                        "labelLimit": 300,
+                        "columnPadding": 10,
+                        "labelOverlap": "parity"
+                    }
                 },
                 "size": {"value": 100},
                 "tooltip": [
@@ -560,7 +570,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     "field": "seriesTitle",
                     "type": "nominal",
                     "title": "Series",
-                    "legend": {"orient": "bottom"}
+                    "legend": {
+                        "orient": "bottom",
+                        "labelLimit": 300,
+                        "columnPadding": 10,
+                        "labelOverlap": "parity"
+                    }
                 },
                 "tooltip": [
                     {"field": "date", "type": "temporal", "title": "Date"},
