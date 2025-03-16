@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Bar chart options
     const showTotals = document.getElementById('show-totals');
+    const overlayBars = document.getElementById('overlay-bars');
     
     // Current visualization type
     let currentVizType = 'line';
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lineShowPoints.addEventListener('change', updateVisualization);
     pointSize.addEventListener('input', updateVisualization);
     showTotals.addEventListener('change', updateVisualization);
+    overlayBars.addEventListener('change', updateVisualization);
     
     // Function to add a new vector input
     function addVectorInput() {
@@ -678,6 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createBarChartSpec(data) {
         // Determine if we should show combined totals
         const showCombinedTotals = showTotals.checked;
+        const useOverlayBars = overlayBars.checked;
         
         let spec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -687,130 +690,120 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 150}, // Increase bottom padding for legend
-            "title": {
-                "text": "Bar Chart",
-                "anchor": "start",
-                "fontSize": 16
+            "padding": 15,
+            "config": {
+                "axis": {
+                    "grid": false
+                }
             }
         };
         
         if (showCombinedTotals) {
-            // Create a specification that shows stacked bars (combined totals)
-            spec = {
-                ...spec,
-                "mark": "bar",
-                "encoding": {
-                    "x": {
-                        "field": "date",
-                        "type": "temporal",
-                        "title": "Date",
-                        "axis": {
-                            "grid": false,
-                            "labelAngle": -45
-                        },
-                        "scale": {"domain": {"selection": "zoom"}}
-                    },
-                    "y": {
-                        "field": "value",
-                        "type": "quantitative",
-                        "title": "Value",
-                        "stack": "zero" // Use regular stacking, not normalized
-                    },
-                    "color": {
-                        "field": "seriesTitle",
-                        "type": "nominal",
-                        "title": "Series",
-                        "legend": {
-                            "orient": "bottom",
-                            "labelLimit": 500,
-                            "columnPadding": 20,
-                            "labelOverlap": "parity",
-                            "layout": {"bottom": {"anchor": "middle"}},
-                            "columns": 1, // Force single column to avoid truncation
-                            "labelAlign": "left"
-                        }
-                    },
-                    "tooltip": [
-                        {"field": "seriesTitle", "type": "nominal", "title": "Series"},
-                        {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
-                        {"field": "value", "type": "quantitative", "title": "Value"}
-                    ]
+            // Show combined totals as stacked bars
+            spec.mark = "bar";
+            spec.encoding = {
+                "x": {
+                    "field": "date",
+                    "type": "nominal",
+                    "title": "Date",
+                    "sort": null
                 },
-                "selection": {
-                    "zoom": {
-                        "type": "interval",
-                        "bind": "scales",
-                        "encodings": ["x", "y"]
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Value",
+                    "stack": "zero"
+                },
+                "color": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": "Series",
+                    "scale": {
+                        "scheme": "category10"
                     }
-                }
+                },
+                "tooltip": [
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                    {"field": "date", "type": "nominal", "title": "Date"},
+                    {"field": "value", "type": "quantitative", "title": "Value"}
+                ]
+            };
+        } else if (useOverlayBars) {
+            // Overlay bars (not stacked)
+            spec.mark = {
+                "type": "bar",
+                "opacity": 0.7
+            };
+            spec.encoding = {
+                "x": {
+                    "field": "date",
+                    "type": "nominal",
+                    "title": "Date",
+                    "sort": null
+                },
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Value",
+                    "stack": null
+                },
+                "color": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": "Series",
+                    "scale": {
+                        "scheme": "category10"
+                    }
+                },
+                "tooltip": [
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                    {"field": "date", "type": "nominal", "title": "Date"},
+                    {"field": "value", "type": "quantitative", "title": "Value"}
+                ]
             };
         } else {
-            // Create a specification that shows grouped bars (independent values)
-            spec = {
-                ...spec,
-                "mark": "bar",
-                "encoding": {
-                    "x": {
-                        "field": "date",
-                        "type": "temporal",
-                        "title": "Date",
-                        "axis": {
-                            "grid": false,
-                            "labelAngle": -45
-                        },
-                        "scale": {"domain": {"selection": "zoom"}}
-                    },
-                    "y": {
-                        "field": "value",
-                        "type": "quantitative",
-                        "title": "Value",
-                        "scale": {"domain": {"selection": "zoom"}}
-                    },
-                    "xOffset": {
-                        "field": "seriesTitle",
-                        "type": "nominal"
-                    },
-                    "color": {
-                        "field": "seriesTitle",
-                        "type": "nominal",
-                        "title": "Series",
-                        "legend": {
-                            "orient": "bottom",
-                            "labelLimit": 500,
-                            "columnPadding": 20,
-                            "labelOverlap": "parity",
-                            "layout": {"bottom": {"anchor": "middle"}},
-                            "columns": 1, // Force single column to avoid truncation
-                            "labelAlign": "left"
-                        }
-                    },
-                    "tooltip": [
-                        {"field": "seriesTitle", "type": "nominal", "title": "Series"},
-                        {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
-                        {"field": "value", "type": "quantitative", "title": "Value"}
-                    ]
-                },
-                "selection": {
-                    "zoom": {
-                        "type": "interval",
-                        "bind": "scales",
-                        "encodings": ["x", "y"]
+            // Default: grouped bars
+            spec.mark = "bar";
+            spec.encoding = {
+                "column": {
+                    "field": "date",
+                    "type": "nominal",
+                    "title": "Date",
+                    "sort": null,
+                    "header": {
+                        "labelAngle": 0
                     }
-                }
+                },
+                "x": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": null,
+                    "axis": {
+                        "labels": false,
+                        "ticks": false,
+                        "domain": false
+                    }
+                },
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Value"
+                },
+                "color": {
+                    "field": "seriesTitle",
+                    "type": "nominal",
+                    "title": "Series",
+                    "scale": {
+                        "scheme": "category10"
+                    }
+                },
+                "tooltip": [
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                    {"field": "date", "type": "nominal", "title": "Date"},
+                    {"field": "value", "type": "quantitative", "title": "Value"}
+                ]
             };
         }
-        
-        spec.config = {
-            "axis": {
-                "labelFontSize": 12,
-                "titleFontSize": 14
-            },
-            "legend": {
-                "labelFontSize": 12,
-                "titleFontSize": 14
-            }
-        };
         
         return spec;
     }
