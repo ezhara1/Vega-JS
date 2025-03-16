@@ -21,15 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Line chart options
     const lineShowPoints = document.getElementById('line-show-points');
-    const connectPoints = document.getElementById('connect-points');
     
     // Scatter chart options
     const pointSize = document.getElementById('point-size');
-    const removeEmptyValuesScatter = document.getElementById('remove-empty-values-scatter');
     
     // Bar chart options
     const showTotals = document.getElementById('show-totals');
-    const removeEmptyValuesBar = document.getElementById('remove-empty-values-bar');
     
     // Current visualization type
     let currentVizType = 'line';
@@ -58,11 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Chart option event listeners
     lineShowPoints.addEventListener('change', updateVisualization);
-    connectPoints.addEventListener('change', updateVisualization);
     pointSize.addEventListener('input', updateVisualization);
-    removeEmptyValuesScatter.addEventListener('change', updateVisualization);
     showTotals.addEventListener('change', updateVisualization);
-    removeEmptyValuesBar.addEventListener('change', updateVisualization);
     
     // Function to add a new vector input
     function addVectorInput() {
@@ -524,20 +518,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Line Chart Vega spec
     function createLineChartSpec(data) {
-        // Process data based on connect points option
-        let processedData = data;
-        if (!connectPoints.checked) {
-            // If not connecting all points, filter out empty values
-            processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
-        }
-        
         const showPoints = lineShowPoints.checked;
         
         return {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
             "description": "Statistics Canada Data Visualization",
             "data": {
-                "values": processedData
+                "values": data
             },
             "width": "container",
             "height": 400,
@@ -610,19 +597,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Scatter Chart Vega spec
     function createScatterChartSpec(data) {
-        // Process data to remove empty values if option is checked
-        let processedData = data;
-        if (removeEmptyValuesScatter.checked) {
-            processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
-        }
-        
         const pointSizeValue = parseInt(pointSize.value);
         
         return {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
             "description": "Statistics Canada Data Visualization",
             "data": {
-                "values": processedData
+                "values": data
             },
             "width": "container",
             "height": 400,
@@ -695,12 +676,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Bar Chart Vega spec
     function createBarChartSpec(data) {
-        // Process data to remove empty values if option is checked
-        let processedData = data;
-        if (removeEmptyValuesBar.checked) {
-            processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
-        }
-        
         // Determine if we should show combined totals
         const showCombinedTotals = showTotals.checked;
         
@@ -708,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
             "description": "Statistics Canada Data Visualization",
             "data": {
-                "values": processedData
+                "values": data
             },
             "width": "container",
             "height": 400,
