@@ -14,6 +14,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const barChartBtn = document.getElementById('bar-chart');
     const tableViewBtn = document.getElementById('table-view');
     
+    // Chart option elements
+    const lineOptions = document.getElementById('line-options');
+    const scatterOptions = document.getElementById('scatter-options');
+    const barOptions = document.getElementById('bar-options');
+    
+    // Line chart options
+    const lineShowPoints = document.getElementById('line-show-points');
+    const removeEmptyValues = document.getElementById('remove-empty-values');
+    
+    // Scatter chart options
+    const pointSize = document.getElementById('point-size');
+    const removeEmptyValuesScatter = document.getElementById('remove-empty-values-scatter');
+    
+    // Bar chart options
+    const showTotals = document.getElementById('show-totals');
+    const removeEmptyValuesBar = document.getElementById('remove-empty-values-bar');
+    
     // Current visualization type
     let currentVizType = 'line';
     
@@ -38,6 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
     scatterChartBtn.addEventListener('click', () => changeVisualization('scatter'));
     barChartBtn.addEventListener('click', () => changeVisualization('bar'));
     tableViewBtn.addEventListener('click', () => changeVisualization('table'));
+    
+    // Chart option event listeners
+    lineShowPoints.addEventListener('change', updateVisualization);
+    removeEmptyValues.addEventListener('change', updateVisualization);
+    pointSize.addEventListener('input', updateVisualization);
+    removeEmptyValuesScatter.addEventListener('change', updateVisualization);
+    showTotals.addEventListener('change', updateVisualization);
+    removeEmptyValuesBar.addEventListener('change', updateVisualization);
     
     // Function to add a new vector input
     function addVectorInput() {
@@ -313,17 +338,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to change visualization type
     function changeVisualization(type) {
-        // Update current type
         currentVizType = type;
         
         // Update active button
-        document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`${type}-chart`) || document.getElementById(`${type}-view`).classList.add('active');
+        [lineChartBtn, scatterChartBtn, barChartBtn, tableViewBtn].forEach(btn => {
+            btn.classList.remove('active');
+        });
         
-        // Update visualization if we have data
-        if (fetchedData.length > 0) {
-            updateVisualization();
+        // Show/hide appropriate option groups
+        lineOptions.classList.add('hidden');
+        scatterOptions.classList.add('hidden');
+        barOptions.classList.add('hidden');
+        
+        if (type === 'line') {
+            lineChartBtn.classList.add('active');
+            lineOptions.classList.remove('hidden');
+        } else if (type === 'scatter') {
+            scatterChartBtn.classList.add('active');
+            scatterOptions.classList.remove('hidden');
+        } else if (type === 'bar') {
+            barChartBtn.classList.add('active');
+            barOptions.classList.remove('hidden');
+        } else if (type === 'table') {
+            tableViewBtn.classList.add('active');
         }
+        
+        // Update visualization
+        updateVisualization();
     }
     
     // Function to update visualization based on current type and data
@@ -483,61 +524,66 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Line Chart Vega spec
     function createLineChartSpec(data) {
+        // Process data to remove empty values if option is checked
+        let processedData = data;
+        if (removeEmptyValues.checked) {
+            processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
+        }
+        
+        const showPoints = lineShowPoints.checked;
+        
         return {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "description": "Statistics Canada Time Series Data",
+            "description": "Statistics Canada Data Visualization",
+            "data": {
+                "values": processedData
+            },
             "width": "container",
             "height": 400,
-            "data": {
-                "values": data
+            "padding": 20,
+            "title": {
+                "text": "Time Series Data",
+                "anchor": "start",
+                "fontSize": 16
             },
             "mark": {
                 "type": "line",
-                "point": true
+                "point": showPoints
             },
             "encoding": {
                 "x": {
                     "field": "date",
                     "type": "temporal",
                     "title": "Date",
-                    "scale": {"domain": {"selection": "zoom"}}
+                    "axis": {
+                        "grid": false,
+                        "labelAngle": -45
+                    }
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value",
-                    "scale": {"domain": {"selection": "zoom"}}
+                    "title": "Value"
                 },
                 "color": {
                     "field": "seriesTitle",
                     "type": "nominal",
-                    "title": "Series",
-                    "legend": {
-                        "orient": "bottom",
-                        "labelLimit": 300,
-                        "columnPadding": 10,
-                        "labelOverlap": "parity"
-                    }
+                    "title": "Series"
                 },
                 "tooltip": [
-                    {"field": "date", "type": "temporal", "title": "Date"},
-                    {"field": "value", "type": "quantitative", "title": "Value"},
-                    {"field": "vectorId", "type": "nominal", "title": "Vector ID"},
-                    {"field": "productId", "type": "nominal", "title": "Product ID"},
-                    {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                    {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
+                    {"field": "value", "type": "quantitative", "title": "Value"}
                 ]
             },
-            "selection": {
-                "zoom": {
-                    "type": "interval",
-                    "bind": "scales",
-                    "encodings": ["x", "y"]
-                }
-            },
             "config": {
-                "point": {
-                    "filled": true,
-                    "size": 60
+                "axis": {
+                    "labelFontSize": 12,
+                    "titleFontSize": 14
+                },
+                "legend": {
+                    "labelFontSize": 12,
+                    "titleFontSize": 14
                 }
             }
         };
@@ -545,56 +591,66 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Scatter Chart Vega spec
     function createScatterChartSpec(data) {
+        // Process data to remove empty values if option is checked
+        let processedData = data;
+        if (removeEmptyValuesScatter.checked) {
+            processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
+        }
+        
+        const pointSizeValue = parseInt(pointSize.value);
+        
         return {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "description": "Statistics Canada Scatter Plot",
+            "description": "Statistics Canada Data Visualization",
+            "data": {
+                "values": processedData
+            },
             "width": "container",
             "height": 400,
-            "data": {
-                "values": data
+            "padding": 20,
+            "title": {
+                "text": "Scatter Plot",
+                "anchor": "start",
+                "fontSize": 16
             },
             "mark": {
                 "type": "point",
-                "filled": true
+                "size": pointSizeValue
             },
             "encoding": {
                 "x": {
                     "field": "date",
                     "type": "temporal",
                     "title": "Date",
-                    "scale": {"domain": {"selection": "zoom"}}
+                    "axis": {
+                        "grid": false,
+                        "labelAngle": -45
+                    }
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value",
-                    "scale": {"domain": {"selection": "zoom"}}
+                    "title": "Value"
                 },
                 "color": {
                     "field": "seriesTitle",
                     "type": "nominal",
-                    "title": "Series",
-                    "legend": {
-                        "orient": "bottom",
-                        "labelLimit": 300,
-                        "columnPadding": 10,
-                        "labelOverlap": "parity"
-                    }
+                    "title": "Series"
                 },
-                "size": {"value": 100},
                 "tooltip": [
-                    {"field": "date", "type": "temporal", "title": "Date"},
-                    {"field": "value", "type": "quantitative", "title": "Value"},
-                    {"field": "vectorId", "type": "nominal", "title": "Vector ID"},
-                    {"field": "productId", "type": "nominal", "title": "Product ID"},
-                    {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
+                    {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                    {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
+                    {"field": "value", "type": "quantitative", "title": "Value"}
                 ]
             },
-            "selection": {
-                "zoom": {
-                    "type": "interval",
-                    "bind": "scales",
-                    "encodings": ["x", "y"]
+            "config": {
+                "axis": {
+                    "labelFontSize": 12,
+                    "titleFontSize": 14
+                },
+                "legend": {
+                    "labelFontSize": 12,
+                    "titleFontSize": 14
                 }
             }
         };
@@ -602,54 +658,113 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Bar Chart Vega spec
     function createBarChartSpec(data) {
-        return {
+        // Process data to remove empty values if option is checked
+        let processedData = data;
+        if (removeEmptyValuesBar.checked) {
+            processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
+        }
+        
+        // Determine if we should show combined totals
+        const showCombinedTotals = showTotals.checked;
+        
+        let spec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "description": "Statistics Canada Bar Chart",
+            "description": "Statistics Canada Data Visualization",
+            "data": {
+                "values": processedData
+            },
             "width": "container",
             "height": 400,
-            "data": {
-                "values": data
-            },
-            "mark": "bar",
-            "encoding": {
-                "x": {
-                    "field": "date",
-                    "type": "temporal",
-                    "title": "Date",
-                    "scale": {"domain": {"selection": "zoom"}}
-                },
-                "y": {
-                    "field": "value",
-                    "type": "quantitative",
-                    "title": "Value",
-                    "scale": {"domain": {"selection": "zoom"}}
-                },
-                "color": {
-                    "field": "seriesTitle",
-                    "type": "nominal",
-                    "title": "Series",
-                    "legend": {
-                        "orient": "bottom",
-                        "labelLimit": 300,
-                        "columnPadding": 10,
-                        "labelOverlap": "parity"
-                    }
-                },
-                "tooltip": [
-                    {"field": "date", "type": "temporal", "title": "Date"},
-                    {"field": "value", "type": "quantitative", "title": "Value"},
-                    {"field": "vectorId", "type": "nominal", "title": "Vector ID"},
-                    {"field": "productId", "type": "nominal", "title": "Product ID"},
-                    {"field": "seriesTitle", "type": "nominal", "title": "Series Title"}
-                ]
-            },
-            "selection": {
-                "zoom": {
-                    "type": "interval",
-                    "bind": "scales",
-                    "encodings": ["x", "y"]
-                }
+            "padding": 20,
+            "title": {
+                "text": "Bar Chart",
+                "anchor": "start",
+                "fontSize": 16
             }
         };
+        
+        if (showCombinedTotals) {
+            // Create a specification that shows stacked bars (combined totals)
+            spec = {
+                ...spec,
+                "mark": "bar",
+                "encoding": {
+                    "x": {
+                        "field": "date",
+                        "type": "temporal",
+                        "title": "Date",
+                        "axis": {
+                            "grid": false,
+                            "labelAngle": -45
+                        }
+                    },
+                    "y": {
+                        "field": "value",
+                        "type": "quantitative",
+                        "title": "Value",
+                        "stack": "normalize" // This creates a 100% stacked bar chart
+                    },
+                    "color": {
+                        "field": "seriesTitle",
+                        "type": "nominal",
+                        "title": "Series"
+                    },
+                    "tooltip": [
+                        {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                        {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
+                        {"field": "value", "type": "quantitative", "title": "Value"}
+                    ]
+                }
+            };
+        } else {
+            // Create a specification that shows grouped bars (independent values)
+            spec = {
+                ...spec,
+                "mark": "bar",
+                "encoding": {
+                    "x": {
+                        "field": "date",
+                        "type": "temporal",
+                        "title": "Date",
+                        "axis": {
+                            "grid": false,
+                            "labelAngle": -45
+                        }
+                    },
+                    "y": {
+                        "field": "value",
+                        "type": "quantitative",
+                        "title": "Value"
+                    },
+                    "xOffset": {
+                        "field": "seriesTitle",
+                        "type": "nominal"
+                    },
+                    "color": {
+                        "field": "seriesTitle",
+                        "type": "nominal",
+                        "title": "Series"
+                    },
+                    "tooltip": [
+                        {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                        {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
+                        {"field": "value", "type": "quantitative", "title": "Value"}
+                    ]
+                }
+            };
+        }
+        
+        spec.config = {
+            "axis": {
+                "labelFontSize": 12,
+                "titleFontSize": 14
+            },
+            "legend": {
+                "labelFontSize": 12,
+                "titleFontSize": 14
+            }
+        };
+        
+        return spec;
     }
 });

@@ -215,3 +215,40 @@ th {
 .remove-vector:hover {
     opacity: 0.9;
 }
+
+.chart-option-group {
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    margin-top: 15px;
+}
+
+.chart-option-group h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.option-item {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.option-item input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    margin-bottom: 0;
+}
+
+.option-item input[type="range"] {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.option-item label {
+    margin-bottom: 0;
+    font-weight: normal;
+}

@@ -36,6 +36,48 @@
                         <button id="bar-chart" class="viz-btn">Bar</button>
                         <button id="table-view" class="viz-btn">Table</button>
                     </div>
+                    
+                    <!-- Chart-specific options -->
+                    <div id="chart-options">
+                        <!-- Line chart options -->
+                        <div id="line-options" class="chart-option-group">
+                            <h3>Line Chart Options</h3>
+                            <div class="option-item">
+                                <input type="checkbox" id="line-show-points" checked>
+                                <label for="line-show-points">Show data points</label>
+                            </div>
+                            <div class="option-item">
+                                <input type="checkbox" id="remove-empty-values">
+                                <label for="remove-empty-values">Remove empty values</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Scatter chart options -->
+                        <div id="scatter-options" class="chart-option-group hidden">
+                            <h3>Scatter Chart Options</h3>
+                            <div class="option-item">
+                                <label for="point-size">Point size:</label>
+                                <input type="range" id="point-size" min="10" max="100" value="40">
+                            </div>
+                            <div class="option-item">
+                                <input type="checkbox" id="remove-empty-values-scatter">
+                                <label for="remove-empty-values-scatter">Remove empty values</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Bar chart options -->
+                        <div id="bar-options" class="chart-option-group hidden">
+                            <h3>Bar Chart Options</h3>
+                            <div class="option-item">
+                                <input type="checkbox" id="show-totals">
+                                <label for="show-totals">Show combined totals</label>
+                            </div>
+                            <div class="option-item">
+                                <input type="checkbox" id="remove-empty-values-bar">
+                                <label for="remove-empty-values-bar">Remove empty values</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
