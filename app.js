@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <label for="vector-id-${vectorCounter}">Vector ID:</label>
             <input type="text" id="vector-id-${vectorCounter}" class="vector-id" placeholder="e.g. 32164132">
             
-            <label for="periods-${vectorCounter}">N Periods:</label>
+            <label for="periods-${vectorCounter}">Number of latest periods:</label>
             <input type="number" id="periods-${vectorCounter}" class="periods" min="1" max="100" value="3">
             
             <button class="remove-vector">Remove</button>
