@@ -350,29 +350,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to change visualization type
     function changeVisualization(type) {
+        // Update current visualization type
         currentVizType = type;
         
         // Update active button
-        [lineChartBtn, scatterChartBtn, barChartBtn, tableViewBtn].forEach(btn => {
+        document.querySelectorAll('.viz-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         
-        // Show/hide appropriate option groups
-        lineOptions.classList.add('hidden');
-        scatterOptions.classList.add('hidden');
-        barOptions.classList.add('hidden');
+        document.getElementById(`${type}-chart`).classList.add('active');
         
+        // Show/hide appropriate options
         if (type === 'line') {
-            lineChartBtn.classList.add('active');
             lineOptions.classList.remove('hidden');
+            scatterOptions.classList.add('hidden');
+            barOptions.classList.add('hidden');
         } else if (type === 'scatter') {
-            scatterChartBtn.classList.add('active');
+            lineOptions.classList.add('hidden');
             scatterOptions.classList.remove('hidden');
+            barOptions.classList.add('hidden');
         } else if (type === 'bar') {
-            barChartBtn.classList.add('active');
+            lineOptions.classList.add('hidden');
+            scatterOptions.classList.add('hidden');
             barOptions.classList.remove('hidden');
+            
+            // Make sure overlay options are visible if overlay bars is checked
+            if (overlayBars.checked) {
+                overlayOptions.classList.remove('hidden');
+            } else {
+                overlayOptions.classList.add('hidden');
+            }
         } else if (type === 'table') {
-            tableViewBtn.classList.add('active');
+            lineOptions.classList.add('hidden');
+            scatterOptions.classList.add('hidden');
+            barOptions.classList.add('hidden');
         }
         
         // Update visualization
@@ -695,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to create Bar Chart Vega spec
     function createBarChartSpec(data) {
         // Determine chart type based on options
-        const showCombinedTotals = showTotals.checked;
+        const stackBars = showTotals.checked;
         const useOverlayBars = overlayBars.checked;
         const opacity = parseInt(barOpacity.value) / 100;
         
@@ -722,8 +733,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         
-        if (showCombinedTotals) {
-            // Show combined totals as stacked bars
+        if (stackBars) {
+            // Stack bars (combined totals)
             spec.mark = "bar";
             spec.encoding = {
                 "x": {
@@ -761,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ]
             };
         } else if (useOverlayBars) {
-            // Overlay bars (not stacked)
+            // Overlay bars (not stacked) - DEFAULT
             spec.mark = {
                 "type": "bar",
                 "opacity": opacity
@@ -801,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ]
             };
         } else {
-            // Default: grouped bars
+            // Grouped bars (side by side)
             spec = {
                 "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
                 "description": "Statistics Canada Data Visualization",
