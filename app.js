@@ -558,23 +558,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     "axis": {
                         "grid": false,
                         "labelAngle": -45
-                    }
+                    },
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value"
+                    "title": "Value",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "color": {
                     "field": "seriesTitle",
                     "type": "nominal",
-                    "title": "Series"
+                    "title": "Series",
+                    "legend": {
+                        "orient": "bottom",
+                        "labelLimit": 300,
+                        "columnPadding": 10,
+                        "labelOverlap": "parity"
+                    }
                 },
                 "tooltip": [
                     {"field": "seriesTitle", "type": "nominal", "title": "Series"},
                     {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
                     {"field": "value", "type": "quantitative", "title": "Value"}
                 ]
+            },
+            "selection": {
+                "zoom": {
+                    "type": "interval",
+                    "bind": "scales",
+                    "encodings": ["x", "y"]
+                }
             },
             "config": {
                 "axis": {
@@ -625,23 +640,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     "axis": {
                         "grid": false,
                         "labelAngle": -45
-                    }
+                    },
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "y": {
                     "field": "value",
                     "type": "quantitative",
-                    "title": "Value"
+                    "title": "Value",
+                    "scale": {"domain": {"selection": "zoom"}}
                 },
                 "color": {
                     "field": "seriesTitle",
                     "type": "nominal",
-                    "title": "Series"
+                    "title": "Series",
+                    "legend": {
+                        "orient": "bottom",
+                        "labelLimit": 300,
+                        "columnPadding": 10,
+                        "labelOverlap": "parity"
+                    }
                 },
                 "tooltip": [
                     {"field": "seriesTitle", "type": "nominal", "title": "Series"},
                     {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
                     {"field": "value", "type": "quantitative", "title": "Value"}
                 ]
+            },
+            "selection": {
+                "zoom": {
+                    "type": "interval",
+                    "bind": "scales",
+                    "encodings": ["x", "y"]
+                }
             },
             "config": {
                 "axis": {
@@ -696,24 +726,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         "axis": {
                             "grid": false,
                             "labelAngle": -45
-                        }
+                        },
+                        "scale": {"domain": {"selection": "zoom"}}
                     },
                     "y": {
                         "field": "value",
                         "type": "quantitative",
                         "title": "Value",
-                        "stack": "normalize" // This creates a 100% stacked bar chart
+                        "stack": "zero" // Use regular stacking, not normalized
                     },
                     "color": {
                         "field": "seriesTitle",
                         "type": "nominal",
-                        "title": "Series"
+                        "title": "Series",
+                        "legend": {
+                            "orient": "bottom",
+                            "labelLimit": 300,
+                            "columnPadding": 10,
+                            "labelOverlap": "parity"
+                        }
                     },
                     "tooltip": [
                         {"field": "seriesTitle", "type": "nominal", "title": "Series"},
                         {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
                         {"field": "value", "type": "quantitative", "title": "Value"}
                     ]
+                },
+                "selection": {
+                    "zoom": {
+                        "type": "interval",
+                        "bind": "scales",
+                        "encodings": ["x", "y"]
+                    }
                 }
             };
         } else {
@@ -729,12 +773,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         "axis": {
                             "grid": false,
                             "labelAngle": -45
-                        }
+                        },
+                        "scale": {"domain": {"selection": "zoom"}}
                     },
                     "y": {
                         "field": "value",
                         "type": "quantitative",
-                        "title": "Value"
+                        "title": "Value",
+                        "scale": {"domain": {"selection": "zoom"}}
                     },
                     "xOffset": {
                         "field": "seriesTitle",
@@ -743,13 +789,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     "color": {
                         "field": "seriesTitle",
                         "type": "nominal",
-                        "title": "Series"
+                        "title": "Series",
+                        "legend": {
+                            "orient": "bottom",
+                            "labelLimit": 300,
+                            "columnPadding": 10,
+                            "labelOverlap": "parity"
+                        }
                     },
                     "tooltip": [
                         {"field": "seriesTitle", "type": "nominal", "title": "Series"},
                         {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
                         {"field": "value", "type": "quantitative", "title": "Value"}
                     ]
+                },
+                "selection": {
+                    "zoom": {
+                        "type": "interval",
+                        "bind": "scales",
+                        "encodings": ["x", "y"]
+                    }
                 }
             };
         }
