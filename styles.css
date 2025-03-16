@@ -182,6 +182,15 @@ th {
     font-weight: 600;
 }
 
+#cube-title {
+    color: var(--secondary-color);
+    margin: 0 0 15px 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 10px;
+}
+
 .hidden {
     display: none;
 }

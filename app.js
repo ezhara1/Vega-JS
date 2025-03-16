@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const visualizationContainer = document.getElementById('visualization-container');
     const tableContainer = document.getElementById('table-container');
     const loadingIndicator = document.getElementById('loading');
+    const cubeTitle = document.getElementById('cube-title');
     
     // Visualization type buttons
     const lineChartBtn = document.getElementById('line-chart');
@@ -24,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Store series information
     let seriesInfo = {};
+    
+    // Store cube metadata
+    let cubeMetadata = {};
     
     // Add event listeners
     addVectorBtn.addEventListener('click', addVectorInput);
@@ -64,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchData() {
         // Show loading indicator
         loadingIndicator.classList.remove('hidden');
+        cubeTitle.classList.add('hidden');
         
         // Get all vector inputs
         const vectorInputs = document.querySelectorAll('.vector-input');
@@ -123,6 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fetch series information for each vector
             await fetchSeriesInfo();
             
+            // Fetch cube metadata if we have product IDs
+            if (fetchedData.length > 0 && fetchedData[0].status === "SUCCESS" && fetchedData[0].object && fetchedData[0].object.productId) {
+                await fetchCubeMetadata(fetchedData[0].object.productId);
+            }
+            
             // Update visualization based on current type
             updateVisualization();
             
@@ -174,11 +184,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
             
+            // Add sample cube metadata
+            cubeMetadata = {
+                "cubeTitleEn": "Average counts of young persons in provincial and territorial correctional services"
+            };
+            
             // Update visualization with sample data
             updateVisualization();
         } finally {
             // Hide loading indicator
             loadingIndicator.classList.add('hidden');
+        }
+    }
+    
+    // Function to fetch cube metadata
+    async function fetchCubeMetadata(productId) {
+        try {
+            const response = await fetch('/api/statcan-cube-metadata', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify([{ "productId": productId }])
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Received cube metadata:', data);
+            
+            if (Array.isArray(data) && data.length > 0 && data[0].status === "SUCCESS" && data[0].object) {
+                cubeMetadata = data[0].object;
+                
+                // Display the cube title
+                if (cubeMetadata.cubeTitleEn) {
+                    cubeTitle.textContent = cubeMetadata.cubeTitleEn;
+                    cubeTitle.classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching cube metadata:', error);
         }
     }
     
@@ -281,6 +328,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to update visualization based on current type and data
     function updateVisualization() {
+        // If no data, return
+        if (fetchedData.length === 0) {
+            return;
+        }
+        
+        // Display cube title if available
+        if (cubeMetadata && cubeMetadata.cubeTitleEn) {
+            cubeTitle.textContent = cubeMetadata.cubeTitleEn;
+            cubeTitle.classList.remove('hidden');
+        }
+        
         if (currentVizType === 'table') {
             // Show table, hide visualization
             visualizationContainer.classList.add('hidden');
