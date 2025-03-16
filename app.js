@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Line chart options
     const lineShowPoints = document.getElementById('line-show-points');
-    const removeEmptyValues = document.getElementById('remove-empty-values');
+    const connectPoints = document.getElementById('connect-points');
     
     // Scatter chart options
     const pointSize = document.getElementById('point-size');
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Chart option event listeners
     lineShowPoints.addEventListener('change', updateVisualization);
-    removeEmptyValues.addEventListener('change', updateVisualization);
+    connectPoints.addEventListener('change', updateVisualization);
     pointSize.addEventListener('input', updateVisualization);
     removeEmptyValuesScatter.addEventListener('change', updateVisualization);
     showTotals.addEventListener('change', updateVisualization);
@@ -524,9 +524,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Line Chart Vega spec
     function createLineChartSpec(data) {
-        // Process data to remove empty values if option is checked
+        // Process data based on connect points option
         let processedData = data;
-        if (removeEmptyValues.checked) {
+        if (!connectPoints.checked) {
+            // If not connecting all points, filter out empty values
             processedData = data.filter(d => d.value !== null && d.value !== undefined && d.value !== '');
         }
         
@@ -540,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": 20,
+            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 100}, // Increase bottom padding for legend
             "title": {
                 "text": "Time Series Data",
                 "anchor": "start",
@@ -575,7 +576,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         "orient": "bottom",
                         "labelLimit": 300,
                         "columnPadding": 10,
-                        "labelOverlap": "parity"
+                        "labelOverlap": "parity",
+                        "layout": {"bottom": {"anchor": "middle"}}
                     }
                 },
                 "tooltip": [
@@ -622,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": 20,
+            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 100}, // Increase bottom padding for legend
             "title": {
                 "text": "Scatter Plot",
                 "anchor": "start",
@@ -657,7 +659,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         "orient": "bottom",
                         "labelLimit": 300,
                         "columnPadding": 10,
-                        "labelOverlap": "parity"
+                        "labelOverlap": "parity",
+                        "layout": {"bottom": {"anchor": "middle"}}
                     }
                 },
                 "tooltip": [
@@ -705,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": 20,
+            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 100}, // Increase bottom padding for legend
             "title": {
                 "text": "Bar Chart",
                 "anchor": "start",
@@ -743,7 +746,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             "orient": "bottom",
                             "labelLimit": 300,
                             "columnPadding": 10,
-                            "labelOverlap": "parity"
+                            "labelOverlap": "parity",
+                            "layout": {"bottom": {"anchor": "middle"}}
                         }
                     },
                     "tooltip": [
@@ -794,7 +798,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             "orient": "bottom",
                             "labelLimit": 300,
                             "columnPadding": 10,
-                            "labelOverlap": "parity"
+                            "labelOverlap": "parity",
+                            "layout": {"bottom": {"anchor": "middle"}}
                         }
                     },
                     "tooltip": [
