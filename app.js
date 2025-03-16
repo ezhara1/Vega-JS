@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 100}, // Increase bottom padding for legend
+            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 150}, // Increase bottom padding for legend
             "title": {
                 "text": "Time Series Data",
                 "anchor": "start",
@@ -574,10 +574,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     "title": "Series",
                     "legend": {
                         "orient": "bottom",
-                        "labelLimit": 300,
-                        "columnPadding": 10,
+                        "labelLimit": 500,
+                        "columnPadding": 20,
                         "labelOverlap": "parity",
-                        "layout": {"bottom": {"anchor": "middle"}}
+                        "layout": {"bottom": {"anchor": "middle"}},
+                        "columns": 1, // Force single column to avoid truncation
+                        "labelAlign": "left"
                     }
                 },
                 "tooltip": [
@@ -624,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 100}, // Increase bottom padding for legend
+            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 150}, // Increase bottom padding for legend
             "title": {
                 "text": "Scatter Plot",
                 "anchor": "start",
@@ -657,10 +659,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     "title": "Series",
                     "legend": {
                         "orient": "bottom",
-                        "labelLimit": 300,
-                        "columnPadding": 10,
+                        "labelLimit": 500,
+                        "columnPadding": 20,
                         "labelOverlap": "parity",
-                        "layout": {"bottom": {"anchor": "middle"}}
+                        "layout": {"bottom": {"anchor": "middle"}},
+                        "columns": 1, // Force single column to avoid truncation
+                        "labelAlign": "left"
                     }
                 },
                 "tooltip": [
@@ -708,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             "width": "container",
             "height": 400,
-            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 100}, // Increase bottom padding for legend
+            "padding": {"left": 40, "top": 20, "right": 40, "bottom": 150}, // Increase bottom padding for legend
             "title": {
                 "text": "Bar Chart",
                 "anchor": "start",
@@ -744,10 +748,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         "title": "Series",
                         "legend": {
                             "orient": "bottom",
-                            "labelLimit": 300,
-                            "columnPadding": 10,
+                            "labelLimit": 500,
+                            "columnPadding": 20,
                             "labelOverlap": "parity",
-                            "layout": {"bottom": {"anchor": "middle"}}
+                            "layout": {"bottom": {"anchor": "middle"}},
+                            "columns": 1, // Force single column to avoid truncation
+                            "labelAlign": "left"
                         }
                     },
                     "tooltip": [
@@ -796,10 +802,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         "title": "Series",
                         "legend": {
                             "orient": "bottom",
-                            "labelLimit": 300,
-                            "columnPadding": 10,
+                            "labelLimit": 500,
+                            "columnPadding": 20,
                             "labelOverlap": "parity",
-                            "layout": {"bottom": {"anchor": "middle"}}
+                            "layout": {"bottom": {"anchor": "middle"}},
+                            "columns": 1, // Force single column to avoid truncation
+                            "labelAlign": "left"
                         }
                     },
                     "tooltip": [
