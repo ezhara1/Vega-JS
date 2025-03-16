@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bar chart options
     const showTotals = document.getElementById('show-totals');
     const overlayBars = document.getElementById('overlay-bars');
+    const barOpacity = document.getElementById('bar-opacity');
+    const opacityValue = document.getElementById('opacity-value');
+    const overlayOptions = document.getElementById('overlay-options');
     
     // Current visualization type
     let currentVizType = 'line';
@@ -58,7 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
     lineShowPoints.addEventListener('change', updateVisualization);
     pointSize.addEventListener('input', updateVisualization);
     showTotals.addEventListener('change', updateVisualization);
-    overlayBars.addEventListener('change', updateVisualization);
+    overlayBars.addEventListener('change', () => {
+        // Toggle visibility of opacity slider
+        if (overlayBars.checked) {
+            overlayOptions.classList.remove('hidden');
+        } else {
+            overlayOptions.classList.add('hidden');
+        }
+        updateVisualization();
+    });
+    barOpacity.addEventListener('input', () => {
+        // Update opacity value display
+        opacityValue.textContent = `${barOpacity.value}%`;
+        updateVisualization();
+    });
     
     // Function to add a new vector input
     function addVectorInput() {
@@ -678,9 +694,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create Bar Chart Vega spec
     function createBarChartSpec(data) {
-        // Determine if we should show combined totals
+        // Determine chart type based on options
         const showCombinedTotals = showTotals.checked;
         const useOverlayBars = overlayBars.checked;
+        const opacity = parseInt(barOpacity.value) / 100;
         
         let spec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -695,6 +712,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "axis": {
                     "grid": false
                 }
+            },
+            "selection": {
+                "zoom": {
+                    "type": "interval",
+                    "bind": "scales",
+                    "encodings": ["x", "y"]
+                }
             }
         };
         
@@ -704,9 +728,12 @@ document.addEventListener('DOMContentLoaded', () => {
             spec.encoding = {
                 "x": {
                     "field": "date",
-                    "type": "nominal",
+                    "type": "temporal",
                     "title": "Date",
-                    "sort": null
+                    "axis": {
+                        "labelAngle": -45,
+                        "format": "%b %Y"
+                    }
                 },
                 "y": {
                     "field": "value",
@@ -720,11 +747,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     "title": "Series",
                     "scale": {
                         "scheme": "category10"
+                    },
+                    "legend": {
+                        "orient": "bottom",
+                        "direction": "horizontal",
+                        "labelLimit": 200
                     }
                 },
                 "tooltip": [
                     {"field": "seriesTitle", "type": "nominal", "title": "Series"},
-                    {"field": "date", "type": "nominal", "title": "Date"},
+                    {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
                     {"field": "value", "type": "quantitative", "title": "Value"}
                 ]
             };
@@ -732,56 +764,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Overlay bars (not stacked)
             spec.mark = {
                 "type": "bar",
-                "opacity": 0.7
+                "opacity": opacity
             };
             spec.encoding = {
                 "x": {
                     "field": "date",
-                    "type": "nominal",
+                    "type": "temporal",
                     "title": "Date",
-                    "sort": null
-                },
-                "y": {
-                    "field": "value",
-                    "type": "quantitative",
-                    "title": "Value",
-                    "stack": null
-                },
-                "color": {
-                    "field": "seriesTitle",
-                    "type": "nominal",
-                    "title": "Series",
-                    "scale": {
-                        "scheme": "category10"
-                    }
-                },
-                "tooltip": [
-                    {"field": "seriesTitle", "type": "nominal", "title": "Series"},
-                    {"field": "date", "type": "nominal", "title": "Date"},
-                    {"field": "value", "type": "quantitative", "title": "Value"}
-                ]
-            };
-        } else {
-            // Default: grouped bars
-            spec.mark = "bar";
-            spec.encoding = {
-                "column": {
-                    "field": "date",
-                    "type": "nominal",
-                    "title": "Date",
-                    "sort": null,
-                    "header": {
-                        "labelAngle": 0
-                    }
-                },
-                "x": {
-                    "field": "seriesTitle",
-                    "type": "nominal",
-                    "title": null,
                     "axis": {
-                        "labels": false,
-                        "ticks": false,
-                        "domain": false
+                        "labelAngle": -45,
+                        "format": "%b %Y"
                     }
                 },
                 "y": {
@@ -795,13 +787,76 @@ document.addEventListener('DOMContentLoaded', () => {
                     "title": "Series",
                     "scale": {
                         "scheme": "category10"
+                    },
+                    "legend": {
+                        "orient": "bottom",
+                        "direction": "horizontal",
+                        "labelLimit": 200
                     }
                 },
                 "tooltip": [
                     {"field": "seriesTitle", "type": "nominal", "title": "Series"},
-                    {"field": "date", "type": "nominal", "title": "Date"},
+                    {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
                     {"field": "value", "type": "quantitative", "title": "Value"}
                 ]
+            };
+        } else {
+            // Default: grouped bars
+            spec = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "description": "Statistics Canada Data Visualization",
+                "data": {
+                    "values": data
+                },
+                "width": "container",
+                "height": 400,
+                "padding": 15,
+                "mark": "bar",
+                "selection": {
+                    "zoom": {
+                        "type": "interval",
+                        "bind": "scales",
+                        "encodings": ["x", "y"]
+                    }
+                },
+                "encoding": {
+                    "x": {
+                        "field": "date",
+                        "type": "temporal",
+                        "title": "Date",
+                        "axis": {
+                            "labelAngle": -45,
+                            "format": "%b %Y"
+                        }
+                    },
+                    "xOffset": {
+                        "field": "seriesTitle",
+                        "type": "nominal"
+                    },
+                    "y": {
+                        "field": "value",
+                        "type": "quantitative",
+                        "title": "Value"
+                    },
+                    "color": {
+                        "field": "seriesTitle",
+                        "type": "nominal",
+                        "title": "Series",
+                        "scale": {
+                            "scheme": "category10"
+                        },
+                        "legend": {
+                            "orient": "bottom",
+                            "direction": "horizontal",
+                            "labelLimit": 200
+                        }
+                    },
+                    "tooltip": [
+                        {"field": "seriesTitle", "type": "nominal", "title": "Series"},
+                        {"field": "date", "type": "temporal", "title": "Date", "format": "%B %Y"},
+                        {"field": "value", "type": "quantitative", "title": "Value"}
+                    ]
+                }
             };
         }
         
