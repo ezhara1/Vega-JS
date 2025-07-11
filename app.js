@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const visualizationContainer = document.getElementById('visualization-container');
     const tableContainer = document.getElementById('table-container');
     const loadingIndicator = document.getElementById('loading');
-    
+    const historyList = document.getElementById('history-list');
+    const clearHistoryBtn = document.getElementById('clear-history');
+
     // Visualization type buttons
     const lineChartBtn = document.getElementById('line-chart');
     const scatterChartBtn = document.getElementById('scatter-chart');
@@ -21,10 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Store fetched data
     let fetchedData = [];
+    let fetchHistory = [];
     
     // Add event listeners
     addVectorBtn.addEventListener('click', addVectorInput);
     fetchDataBtn.addEventListener('click', fetchData);
+    clearHistoryBtn.addEventListener('click', clearHistory);
+
+    loadHistory();
     
     // Visualization type event listeners
     lineChartBtn.addEventListener('click', () => changeVisualization('line'));
@@ -165,7 +171,52 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             // Hide loading indicator
             loadingIndicator.classList.add('hidden');
+            saveToHistory(requestData);
         }
+    }
+
+    function saveToHistory(requestData) {
+        const entry = {
+            timestamp: new Date().toISOString(),
+            requestData
+        };
+        fetchHistory.push(entry);
+        localStorage.setItem('fetchHistory', JSON.stringify(fetchHistory));
+        updateHistoryList();
+    }
+
+    function loadHistory() {
+        const stored = localStorage.getItem('fetchHistory');
+        if (stored) {
+            try {
+                fetchHistory = JSON.parse(stored);
+            } catch (e) {
+                fetchHistory = [];
+            }
+        }
+        updateHistoryList();
+    }
+
+    function updateHistoryList() {
+        historyList.innerHTML = '';
+        if (fetchHistory.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'No history yet';
+            historyList.appendChild(li);
+            return;
+        }
+        fetchHistory.forEach(entry => {
+            const li = document.createElement('li');
+            const vectors = entry.requestData.map(r => `${r.vectorId}(${r.latestN})`).join(', ');
+            li.textContent = `${new Date(entry.timestamp).toLocaleString()}: ${vectors}`;
+            historyList.appendChild(li);
+        });
+    }
+
+    function clearHistory() {
+        fetchHistory = [];
+        localStorage.removeItem('fetchHistory');
+        updateHistoryList();
     }
     
     // Function to change visualization type
@@ -175,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update active button
         document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`${type}-chart`) || document.getElementById(`${type}-view`).classList.add('active');
+        const activeBtn = document.getElementById(`${type}-chart`) || document.getElementById(`${type}-view`);
+        if (activeBtn) activeBtn.classList.add('active');
         
         // Update visualization if we have data
         if (fetchedData.length > 0) {
