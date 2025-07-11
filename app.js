@@ -175,7 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update active button
         document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`${type}-chart`) || document.getElementById(`${type}-view`).classList.add('active');
+        const activeBtn = document.getElementById(`${type}-chart`) || document.getElementById(`${type}-view`);
+        if (activeBtn) activeBtn.classList.add('active');
         
         // Update visualization if we have data
         if (fetchedData.length > 0) {
