@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const visualizationContainer = document.getElementById('visualization-container');
     const tableContainer = document.getElementById('table-container');
     const loadingIndicator = document.getElementById('loading');
+
+    const saveNameInput = document.getElementById('save-name');
+    const saveSelectionBtn = document.getElementById('save-selection');
+    const savedSelectionsSelect = document.getElementById('saved-selections');
+    const loadSelectionBtn = document.getElementById('load-selection');
     
     // Visualization type buttons
     const lineChartBtn = document.getElementById('line-chart');
@@ -21,10 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Store fetched data
     let fetchedData = [];
+
+    // Populate saved selections dropdown on load
+    updateSavedSelectionsDropdown();
     
     // Add event listeners
     addVectorBtn.addEventListener('click', addVectorInput);
     fetchDataBtn.addEventListener('click', fetchData);
+    saveSelectionBtn.addEventListener('click', saveCurrentSelection);
+    loadSelectionBtn.addEventListener('click', loadSelectedSelection);
     
     // Visualization type event listeners
     lineChartBtn.addEventListener('click', () => changeVisualization('line'));
@@ -162,10 +172,89 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Update visualization with sample data
             updateVisualization();
+
         } finally {
             // Hide loading indicator
             loadingIndicator.classList.add('hidden');
         }
+    }
+
+    // Save the current vector selection with a given name
+    function saveCurrentSelection() {
+        const vectorInputs = document.querySelectorAll('.vector-input');
+        const selection = [];
+
+        vectorInputs.forEach(input => {
+            const vectorId = input.querySelector('.vector-id').value.trim();
+            const periods = parseInt(input.querySelector('.periods').value);
+
+            if (vectorId && !isNaN(periods)) {
+                selection.push({ vectorId, latestN: periods });
+            }
+        });
+
+        if (selection.length === 0) {
+            alert('Please add at least one valid vector to save.');
+            return;
+        }
+
+        const name = saveNameInput.value.trim();
+        if (!name) {
+            alert('Please provide a name for this selection.');
+            return;
+        }
+
+        const saved = getSavedSelections();
+        saved[name] = selection;
+        localStorage.setItem('savedSelections', JSON.stringify(saved));
+
+        updateSavedSelectionsDropdown();
+        alert('Selection saved.');
+    }
+
+    // Load the selected saved vectors
+    function loadSelectedSelection() {
+        const name = savedSelectionsSelect.value;
+        if (!name) {
+            alert('Please choose a saved selection to load.');
+            return;
+        }
+
+        const saved = getSavedSelections();
+        const selection = saved[name];
+        if (!selection) {
+            alert('Saved selection not found.');
+            return;
+        }
+
+        // Clear existing inputs
+        vectorInputsContainer.innerHTML = '';
+        vectorCounter = 0;
+
+        selection.forEach(item => {
+            addVectorInput();
+            const div = vectorInputsContainer.lastElementChild;
+            div.querySelector('.vector-id').value = item.vectorId;
+            div.querySelector('.periods').value = item.latestN;
+        });
+    }
+
+    // Retrieve saved selections from localStorage
+    function getSavedSelections() {
+        const saved = localStorage.getItem('savedSelections');
+        return saved ? JSON.parse(saved) : {};
+    }
+
+    // Populate the dropdown with saved selections
+    function updateSavedSelectionsDropdown() {
+        const saved = getSavedSelections();
+        savedSelectionsSelect.innerHTML = '<option value="" disabled selected>Load saved...</option>';
+        Object.keys(saved).forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = key;
+            savedSelectionsSelect.appendChild(option);
+        });
     }
     
     // Function to change visualization type
