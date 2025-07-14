@@ -206,3 +206,17 @@ th {
 .remove-vector:hover {
     opacity: 0.9;
 }
+
+.save-load-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.save-load-controls input,
+.save-load-controls select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
