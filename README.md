@@ -11,8 +11,9 @@ A web application for visualizing Statistics Canada data using the Vega visualiz
   - Line charts
   - Scatter plots
   - Stacked bar charts
-  - Tabular view
+- Tabular view
 - Interactive charts with tooltips and zooming capabilities
+- View a log of previous fetches and re-run them
 
 ## Technologies Used
 
@@ -27,6 +28,7 @@ A web application for visualizing Statistics Canada data using the Vega visualiz
 3. Add additional vectors if needed using the "Add Vector" button
 4. Click "Fetch Data" to retrieve the data from Statistics Canada
 5. Switch between different visualization types using the buttons in the sidebar
+6. Click "Show Log" to view past fetches and re-fetch them
 
 ## API Information
 
