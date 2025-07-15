@@ -31,6 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const barOpacity = document.getElementById('bar-opacity');
     const opacityValue = document.getElementById('opacity-value');
     const overlayOptions = document.getElementById('overlay-options');
+
+    // Log modal elements
+    const showLogBtn = document.getElementById('show-log');
+    const logModal = document.getElementById('log-modal');
+    const logList = document.getElementById('log-list');
+    const closeLogBtn = document.getElementById('close-log');
     
     // Current visualization type
     let currentVizType = 'line';
@@ -75,6 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
         opacityValue.textContent = `${barOpacity.value}%`;
         updateVisualization();
     });
+
+    showLogBtn.addEventListener('click', openLogModal);
+    closeLogBtn.addEventListener('click', () => logModal.classList.add('hidden'));
     
     // Function to add a new vector input
     function addVectorInput() {
@@ -102,28 +111,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Function to fetch data from the API
-    async function fetchData() {
+    async function fetchData(providedRequestData = null) {
         // Show loading indicator
         loadingIndicator.classList.remove('hidden');
         cubeTitle.classList.add('hidden');
-        
-        // Get all vector inputs
-        const vectorInputs = document.querySelectorAll('.vector-input');
-        
-        // Prepare request data
-        const requestData = [];
-        
-        vectorInputs.forEach(input => {
-            const vectorId = input.querySelector('.vector-id').value.trim();
-            const periods = parseInt(input.querySelector('.periods').value);
-            
-            if (vectorId && !isNaN(periods)) {
-                requestData.push({
-                    "vectorId": vectorId,
-                    "latestN": periods
-                });
-            }
-        });
+
+        let requestData = providedRequestData;
+
+        if (!requestData) {
+            // Get all vector inputs
+            const vectorInputs = document.querySelectorAll('.vector-input');
+
+            // Prepare request data
+            requestData = [];
+
+            vectorInputs.forEach(input => {
+                const vectorId = input.querySelector('.vector-id').value.trim();
+                const periods = parseInt(input.querySelector('.periods').value);
+
+                if (vectorId && !isNaN(periods)) {
+                    requestData.push({
+                        "vectorId": vectorId,
+                        "latestN": periods
+                    });
+                }
+            });
+        }
         
         if (requestData.length === 0) {
             alert('Please add at least one valid vector ID and period.');
@@ -172,6 +185,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Update visualization based on current type
             updateVisualization();
+
+            // Log request data
+            try {
+                await fetch('/api/fetch-log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request: requestData })
+                });
+            } catch (e) {
+                console.error('Failed to log request', e);
+            }
             
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -872,5 +896,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         return spec;
+    }
+
+    async function openLogModal() {
+        try {
+            const response = await fetch('/api/fetch-log');
+            if (!response.ok) {
+                throw new Error('Failed to load log');
+            }
+            const data = await response.json();
+            renderLogList(data.logs || []);
+            logModal.classList.remove('hidden');
+        } catch (e) {
+            console.error(e);
+            alert('Could not load log data');
+        }
+    }
+
+    function renderLogList(logs) {
+        logList.innerHTML = '';
+        if (!logs.length) {
+            logList.innerHTML = '<li>No log entries</li>';
+            return;
+        }
+
+        logs.forEach((entry, idx) => {
+            const li = document.createElement('li');
+            const info = entry.request.map(r => `${r.vectorId} (${r.latestN})`).join(', ');
+            const time = new Date(entry.timestamp).toLocaleString();
+            li.innerHTML = `<span>${time}: ${info}</span> <button class="re-fetch" data-index="${idx}">Re-fetch</button>`;
+            logList.appendChild(li);
+        });
+
+        logList.querySelectorAll('.re-fetch').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                const req = logs[idx].request;
+                fetchData(req);
+                logModal.classList.add('hidden');
+            });
+        });
     }
 });
