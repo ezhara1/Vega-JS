@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const logModal = document.getElementById('log-modal');
     const logList = document.getElementById('log-list');
     const closeLogBtn = document.getElementById('close-log');
+
+    // Disable log button until at least one fetch is logged
+    showLogBtn.disabled = true;
     
     // Current visualization type
     let currentVizType = 'line';
@@ -84,6 +87,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showLogBtn.addEventListener('click', openLogModal);
     closeLogBtn.addEventListener('click', () => logModal.classList.add('hidden'));
+
+    // Close modal when clicking outside the content
+    logModal.addEventListener('click', (e) => {
+        if (e.target === logModal) {
+            logModal.classList.add('hidden');
+        }
+    });
+
+    // Close modal on Escape key press
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            logModal.classList.add('hidden');
+        }
+    });
     
     // Function to add a new vector input
     function addVectorInput() {
@@ -193,6 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ request: requestData })
                 });
+                // Log stored successfully, enable log button
+                showLogBtn.disabled = false;
             } catch (e) {
                 console.error('Failed to log request', e);
             }

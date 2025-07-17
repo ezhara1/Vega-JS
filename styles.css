@@ -306,3 +306,9 @@ th {
 .re-fetch:hover {
     opacity: 0.9;
 }
+
+/* Disabled button styles */
+button:disabled, .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
