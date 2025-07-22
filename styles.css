@@ -192,7 +192,7 @@ th {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 #loading {
@@ -200,6 +200,63 @@ th {
     text-align: center;
     font-weight: 500;
     color: var(--secondary-color);
+}
+
+/* Modal styles for Saved Vectors */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10vh auto;
+    padding: 30px 24px 24px 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 18px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close:hover,
+.close:focus {
+    color: var(--danger-color);
+}
+
+#saved-vectors-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 18px;
+}
+#saved-vectors-list li {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+#saved-vectors-list li:hover {
+    background: #f1f3f5;
 }
 
 .remove-vector {

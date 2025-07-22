@@ -3,6 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const addVectorBtn = document.getElementById('add-vector');
     const fetchDataBtn = document.getElementById('fetch-data');
     const vectorInputsContainer = document.getElementById('vector-inputs');
+    const savedVectorsBtn = document.getElementById('saved-vectors-btn');
+    const savedVectorsDialog = document.getElementById('saved-vectors-dialog');
+    const closeSavedVectors = document.getElementById('close-saved-vectors');
+    const savedVectorsList = document.getElementById('saved-vectors-list');
+
+    // Add Save Selection button
+    const saveSelectionBtn = document.createElement('button');
+    saveSelectionBtn.id = 'save-selection-btn';
+    saveSelectionBtn.className = 'btn';
+    saveSelectionBtn.style.marginBottom = '10px';
+    saveSelectionBtn.textContent = 'Save Selection';
+    vectorInputsContainer.parentNode.insertBefore(saveSelectionBtn, vectorInputsContainer);
+
+    // LocalStorage key
+    const SAVED_VECTORS_KEY = 'statcan_saved_vectors';
     const visualizationContainer = document.getElementById('visualization-container');
     const tableContainer = document.getElementById('table-container');
     const loadingIndicator = document.getElementById('loading');
@@ -46,10 +61,99 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Store cube metadata
     let cubeMetadata = {};
+
+    // --- Saved Vectors Logic ---
+    function getCurrentSelection() {
+        const vectorInputs = document.querySelectorAll('.vector-input');
+        const selection = [];
+        vectorInputs.forEach(input => {
+            const vectorId = input.querySelector('.vector-id').value.trim();
+            const periods = parseInt(input.querySelector('.periods').value);
+            if (vectorId && !isNaN(periods)) {
+                selection.push({ vectorId, periods });
+            }
+        });
+        return selection;
+    }
+
+    function saveCurrentSelection() {
+        const selection = getCurrentSelection();
+        if (selection.length === 0) {
+            alert('Please enter at least one valid vector to save.');
+            return;
+        }
+        let saved = JSON.parse(localStorage.getItem(SAVED_VECTORS_KEY) || '[]');
+        // Save with timestamp for uniqueness
+        saved.push({
+            id: Date.now(),
+            selection,
+            label: 'Saved ' + new Date().toLocaleString()
+        });
+        localStorage.setItem(SAVED_VECTORS_KEY, JSON.stringify(saved));
+        alert('Vector selection saved!');
+    }
+
+    function openSavedVectorsDialog() {
+        renderSavedVectorsList();
+        savedVectorsDialog.classList.remove('hidden');
+        savedVectorsDialog.style.display = 'flex';
+    }
+    function closeSavedVectorsDialog() {
+        savedVectorsDialog.classList.add('hidden');
+        savedVectorsDialog.style.display = 'none';
+    }
+    function renderSavedVectorsList() {
+        let saved = JSON.parse(localStorage.getItem(SAVED_VECTORS_KEY) || '[]');
+        savedVectorsList.innerHTML = '';
+        if (saved.length === 0) {
+            savedVectorsList.innerHTML = '<li style="color:#888">No saved selections.</li>';
+            return;
+        }
+        saved.slice().reverse().forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item.label + ' (' + item.selection.map(s => s.vectorId + ':' + s.periods).join(', ') + ')';
+            li.style.cursor = 'pointer';
+            li.onclick = () => {
+                applySavedSelection(item.selection);
+                closeSavedVectorsDialog();
+            };
+            savedVectorsList.appendChild(li);
+        });
+    }
+    function applySavedSelection(selection) {
+        // Remove all current vector inputs
+        vectorInputsContainer.innerHTML = '';
+        selection.forEach((item, idx) => {
+            const vectorInputDiv = document.createElement('div');
+            vectorInputDiv.className = 'vector-input';
+            vectorInputDiv.innerHTML = `
+                <label for="vector-id-${idx+1}">Vector ID:</label>
+                <input type="text" id="vector-id-${idx+1}" class="vector-id" placeholder="e.g. 32164132" value="${item.vectorId}">
+                <label for="periods-${idx+1}">Number of latest periods:</label>
+                <input type="number" id="periods-${idx+1}" class="periods" min="1" max="100" value="${item.periods}">
+                <button class="remove-vector">Remove</button>
+            `;
+            vectorInputsContainer.appendChild(vectorInputDiv);
+            // Add remove button event
+            const removeBtn = vectorInputDiv.querySelector('.remove-vector');
+            removeBtn.addEventListener('click', () => {
+                vectorInputsContainer.removeChild(vectorInputDiv);
+            });
+        });
+        vectorCounter = selection.length;
+        // Optionally auto-fetch data
+        // fetchData();
+    }
     
     // Add event listeners
     addVectorBtn.addEventListener('click', addVectorInput);
     fetchDataBtn.addEventListener('click', fetchData);
+    saveSelectionBtn.addEventListener('click', saveCurrentSelection);
+    savedVectorsBtn.addEventListener('click', openSavedVectorsDialog);
+    closeSavedVectors.addEventListener('click', closeSavedVectorsDialog);
+    savedVectorsDialog.addEventListener('click', function(e) {
+        if (e.target === savedVectorsDialog) closeSavedVectorsDialog();
+    });
     
     // Visualization type event listeners
     lineChartBtn.addEventListener('click', () => changeVisualization('line'));
