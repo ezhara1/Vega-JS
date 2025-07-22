@@ -11,6 +11,18 @@
     <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 </head>
 <body>
+    <div id="saved-vectors-bar">
+        <button id="saved-vectors-btn" class="btn">Saved Vector Sets</button>
+    </div>
+
+    <div id="saved-vectors-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-saved-vectors" class="close">&times;</span>
+            <h3>Saved Vector Sets</h3>
+            <div id="saved-vector-list"></div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="sidebar">
             <h2>Data to Add</h2>
@@ -27,6 +39,7 @@
                 
                 <button id="add-vector" class="btn">Add Vector</button>
                 <button id="fetch-data" class="btn primary">Fetch Data</button>
+                <button id="save-vectors" class="btn">Save Vectors</button>
                 
                 <div class="visualization-controls">
                     <h3>Chart Type</h3>
