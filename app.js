@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableContainer = document.getElementById('table-container');
     const loadingIndicator = document.getElementById('loading');
     const cubeTitle = document.getElementById('cube-title');
+    const saveVectorsBtn = document.getElementById('save-vectors');
+    const savedVectorsBtn = document.getElementById('saved-vectors-btn');
+    const savedVectorsModal = document.getElementById('saved-vectors-modal');
+    const closeSavedVectorsBtn = document.getElementById('close-saved-vectors');
+    const savedVectorsList = document.getElementById('saved-vector-list');
     
     // Visualization type buttons
     const lineChartBtn = document.getElementById('line-chart');
@@ -46,10 +51,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Store cube metadata
     let cubeMetadata = {};
+
+    // Saved vector sets from localStorage
+    let savedVectorSets = JSON.parse(localStorage.getItem('savedVectorSets') || '[]');
     
     // Add event listeners
     addVectorBtn.addEventListener('click', addVectorInput);
     fetchDataBtn.addEventListener('click', fetchData);
+    saveVectorsBtn.addEventListener('click', saveCurrentVectors);
+    savedVectorsBtn.addEventListener('click', () => {
+        populateSavedVectorsList();
+        savedVectorsModal.classList.remove('hidden');
+    });
+    closeSavedVectorsBtn.addEventListener('click', () => {
+        savedVectorsModal.classList.add('hidden');
+    });
     
     // Visualization type event listeners
     lineChartBtn.addEventListener('click', () => changeVisualization('line'));
@@ -346,6 +362,86 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+    }
+
+    // Save current vector inputs to localStorage
+    function saveCurrentVectors() {
+        const vectorInputs = document.querySelectorAll('.vector-input');
+        const vectors = [];
+
+        vectorInputs.forEach(input => {
+            const vectorId = input.querySelector('.vector-id').value.trim();
+            const periods = parseInt(input.querySelector('.periods').value);
+            if (vectorId) {
+                const title = seriesInfo[vectorId] ? seriesInfo[vectorId].seriesTitleEn : '';
+                vectors.push({ vectorId, periods, title });
+            }
+        });
+
+        if (vectors.length === 0) {
+            alert('No vectors to save.');
+            return;
+        }
+
+        const name = prompt('Name for this vector set:', `Set ${savedVectorSets.length + 1}`);
+        if (!name) return;
+
+        savedVectorSets.push({ name, vectors });
+        localStorage.setItem('savedVectorSets', JSON.stringify(savedVectorSets));
+        alert('Vector set saved.');
+    }
+
+    // Populate saved vector list in the modal
+    function populateSavedVectorsList() {
+        savedVectorsList.innerHTML = '';
+
+        if (savedVectorSets.length === 0) {
+            savedVectorsList.innerHTML = '<p>No saved vectors.</p>';
+            return;
+        }
+
+        savedVectorSets.forEach((set, index) => {
+            const container = document.createElement('div');
+            container.className = 'saved-set';
+
+            const title = document.createElement('h4');
+            title.textContent = set.name;
+            container.appendChild(title);
+
+            const ul = document.createElement('ul');
+            set.vectors.forEach(v => {
+                const li = document.createElement('li');
+                li.textContent = `${v.vectorId} - ${v.title || 'No title'} (Periods: ${v.periods})`;
+                ul.appendChild(li);
+            });
+            container.appendChild(ul);
+
+            const loadBtn = document.createElement('button');
+            loadBtn.textContent = 'Load';
+            loadBtn.className = 'btn primary';
+            loadBtn.addEventListener('click', () => {
+                loadVectorSet(index);
+                savedVectorsModal.classList.add('hidden');
+            });
+            container.appendChild(loadBtn);
+
+            savedVectorsList.appendChild(container);
+        });
+    }
+
+    // Load a saved vector set into the input fields
+    function loadVectorSet(index) {
+        const set = savedVectorSets[index];
+        if (!set) return;
+
+        vectorInputsContainer.innerHTML = '';
+        vectorCounter = 0;
+        set.vectors.forEach(vec => {
+            addVectorInput();
+            const div = vectorInputsContainer.lastElementChild;
+            div.querySelector('.vector-id').value = vec.vectorId;
+            div.querySelector('.periods').value = vec.periods;
+        });
     }
     
     // Function to change visualization type
